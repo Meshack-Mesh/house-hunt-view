@@ -7,8 +7,25 @@ import { SearchFilters } from "@/components/SearchFilters";
 import { LocationSearch } from "@/components/LocationSearch";
 import { MapIcon, Phone, Mail } from "lucide-react";
 
+// Define property type with optional distance
+interface Property {
+  id: number;
+  title: string;
+  location: string;
+  price: string;
+  period: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: string;
+  image: string;
+  description: string;
+  features: string[];
+  coordinates: { lat: number; lng: number };
+  distance?: number;
+}
+
 // Sample property data
-const properties = [
+const properties: Property[] = [
   {
     id: 1,
     title: "Modern 2-Bedroom Apartment",
@@ -96,7 +113,7 @@ const properties = [
 ];
 
 const Index = () => {
-  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceFilter, setPriceFilter] = useState({ min: 0, max: 200000 });
@@ -116,7 +133,7 @@ const Index = () => {
     return d;
   };
 
-  const handleGetDirections = (property) => {
+  const handleGetDirections = (property: Property) => {
     setSelectedProperty(property);
     setIsPaymentModalOpen(true);
   };
@@ -135,7 +152,7 @@ const Index = () => {
     console.log("User location selected:", location);
   };
 
-  const filteredProperties = properties
+  const filteredProperties: Property[] = properties
     .filter(property => {
       const price = parseInt(property.price.replace(/[^0-9]/g, ''));
       const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
