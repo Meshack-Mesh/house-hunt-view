@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PropertyCard } from "@/components/PropertyCard";
 import { PaymentModal } from "@/components/PaymentModal";
@@ -24,7 +23,7 @@ interface Property {
   distance?: number;
 }
 
-// Sample property data
+// Sample property data with actual house images
 const properties: Property[] = [
   {
     id: 1,
@@ -35,7 +34,7 @@ const properties: Property[] = [
     bedrooms: 2,
     bathrooms: 2,
     area: "120 sqm",
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
     description: "Spacious modern apartment with stunning city views, fully furnished with contemporary amenities.",
     features: ["Parking", "Security", "Generator", "Water"],
     coordinates: { lat: -1.2577, lng: 36.7888 }
@@ -49,7 +48,7 @@ const properties: Property[] = [
     bedrooms: 3,
     bathrooms: 3,
     area: "250 sqm",
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=800&h=600&fit=crop",
     description: "Beautiful villa in a quiet neighborhood with garden and modern finishes.",
     features: ["Garden", "Parking", "Swimming Pool", "Security"],
     coordinates: { lat: -1.3197, lng: 36.7084 }
@@ -63,7 +62,7 @@ const properties: Property[] = [
     bedrooms: 1,
     bathrooms: 1,
     area: "65 sqm",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1431576901776-e539bd916ba2?w=800&h=600&fit=crop",
     description: "Perfect for young professionals, modern studio with all amenities included.",
     features: ["Furnished", "WiFi", "Security", "Lift"],
     coordinates: { lat: -1.2921, lng: 36.7842 }
@@ -77,7 +76,7 @@ const properties: Property[] = [
     bedrooms: 4,
     bathrooms: 4,
     area: "300 sqm",
-    image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1459767129954-1b1c1f9b9ace?w=800&h=600&fit=crop",
     description: "Spacious family home with large compound and modern amenities.",
     features: ["Large Compound", "Parking", "Generator", "Borehole"],
     coordinates: { lat: -1.2297, lng: 36.7633 }
@@ -91,7 +90,7 @@ const properties: Property[] = [
     bedrooms: 2,
     bathrooms: 2,
     area: "140 sqm",
-    image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1460574283810-2aab119d8511?w=800&h=600&fit=crop",
     description: "High-end apartment in prime location with city skyline views.",
     features: ["City View", "Gym", "Swimming Pool", "Concierge"],
     coordinates: { lat: -1.2921, lng: 36.8219 }
@@ -105,10 +104,66 @@ const properties: Property[] = [
     bedrooms: 1,
     bathrooms: 1,
     area: "50 sqm",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
     description: "Budget-friendly apartment perfect for students and young professionals.",
     features: ["Security", "Water", "Near Transport", "Shops Nearby"],
     coordinates: { lat: -1.2841, lng: 36.8358 }
+  },
+  {
+    id: 7,
+    title: "Spacious 3-Bedroom Apartment",
+    location: "Kawangware, Nairobi",
+    price: "KSh 35,000",
+    period: "per month",
+    bedrooms: 3,
+    bathrooms: 2,
+    area: "150 sqm",
+    image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=800&h=600&fit=crop",
+    description: "Well-maintained apartment in Kawangware with easy access to public transport.",
+    features: ["Parking", "Security", "Water", "Near Market"],
+    coordinates: { lat: -1.2598, lng: 36.7345 }
+  },
+  {
+    id: 8,
+    title: "Modern 2-Bedroom House",
+    location: "Pipeline, Embakasi",
+    price: "KSh 28,000",
+    period: "per month",
+    bedrooms: 2,
+    bathrooms: 2,
+    area: "100 sqm",
+    image: "https://images.unsplash.com/photo-1431576901776-e539bd916ba2?w=800&h=600&fit=crop",
+    description: "Newly built house in Pipeline area with modern amenities and secure compound.",
+    features: ["Secure Compound", "Parking", "Water", "Electricity"],
+    coordinates: { lat: -1.3456, lng: 36.8742 }
+  },
+  {
+    id: 9,
+    title: "Furnished 1-Bedroom Apartment",
+    location: "Donholm, Nairobi",
+    price: "KSh 22,000",
+    period: "per month",
+    bedrooms: 1,
+    bathrooms: 1,
+    area: "70 sqm",
+    image: "https://images.unsplash.com/photo-1459767129954-1b1c1f9b9ace?w=800&h=600&fit=crop",
+    description: "Fully furnished apartment in Donholm, perfect for working professionals.",
+    features: ["Furnished", "Security", "Water", "Internet Ready"],
+    coordinates: { lat: -1.2823, lng: 36.8473 }
+  },
+  {
+    id: 10,
+    title: "Family 3-Bedroom House",
+    location: "Kibera, Nairobi",
+    price: "KSh 20,000",
+    period: "per month",
+    bedrooms: 3,
+    bathrooms: 1,
+    area: "90 sqm",
+    image: "https://images.unsplash.com/photo-1460574283810-2aab119d8511?w=800&h=600&fit=crop",
+    description: "Affordable family house in Kibera with basic amenities and good community access.",
+    features: ["Community Access", "Water", "Electricity", "Schools Nearby"],
+    coordinates: { lat: -1.3123, lng: 36.7890 }
   }
 ];
 
@@ -193,7 +248,7 @@ const Index = () => {
             Find Your Perfect <span className="text-yellow-300">Rental Home</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
-            Discover amazing rental properties across Nairobi. Pay only KSh 20 to unlock exact locations and directions.
+            Discover amazing empty rental houses across Nairobi. Pay only KSh 20 to unlock exact locations and directions.
           </p>
           <div className="flex items-center justify-center space-x-6 text-lg">
             <div className="flex items-center">
@@ -223,9 +278,9 @@ const Index = () => {
       {/* Properties Grid */}
       <section className="container mx-auto px-6 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Available Properties</h2>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">Available Empty Houses</h2>
           <p className="text-gray-600 text-lg">
-            {filteredProperties.length} properties found
+            {filteredProperties.length} empty rental houses found
             {userLocation && " (sorted by distance from your location)"}
           </p>
         </div>
@@ -249,7 +304,7 @@ const Index = () => {
 
         {filteredProperties.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-gray-500 text-xl">No properties match your search criteria.</p>
+            <p className="text-gray-500 text-xl">No empty houses match your search criteria.</p>
           </div>
         )}
       </section>
@@ -261,7 +316,7 @@ const Index = () => {
             <div>
               <h3 className="text-2xl font-bold mb-4">RentFind Kenya</h3>
               <p className="text-gray-300">
-                Your trusted partner in finding the perfect rental home in Nairobi and beyond.
+                Your trusted partner in finding the perfect empty rental house in Nairobi and beyond.
               </p>
             </div>
             <div>
