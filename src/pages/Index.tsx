@@ -4,6 +4,7 @@ import { PropertyCard } from "@/components/PropertyCard";
 import { PaymentModal } from "@/components/PaymentModal";
 import { Header } from "@/components/Header";
 import { SearchFilters } from "@/components/SearchFilters";
+import { LocationSearch } from "@/components/LocationSearch";
 import { MapIcon, Phone, Mail } from "lucide-react";
 
 // Sample property data
@@ -99,6 +100,21 @@ const Index = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceFilter, setPriceFilter] = useState({ min: 0, max: 200000 });
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
+
+  // Calculate distance between two coordinates (in km)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const d = R * c; // Distance in km
+    return d;
+  };
 
   const handleGetDirections = (property) => {
     setSelectedProperty(property);
@@ -107,7 +123,6 @@ const Index = () => {
 
   const handlePaymentSuccess = () => {
     if (selectedProperty) {
-      // Generate Google Maps directions URL
       const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${selectedProperty.coordinates.lat},${selectedProperty.coordinates.lng}&travelmode=driving`;
       window.open(directionsUrl, '_blank');
       setIsPaymentModalOpen(false);
@@ -115,13 +130,39 @@ const Index = () => {
     }
   };
 
-  const filteredProperties = properties.filter(property => {
-    const price = parseInt(property.price.replace(/[^0-9]/g, ''));
-    const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         property.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPrice = price >= priceFilter.min && price <= priceFilter.max;
-    return matchesSearch && matchesPrice;
-  });
+  const handleLocationSelect = (location: { lat: number; lng: number; address: string }) => {
+    setUserLocation(location);
+    console.log("User location selected:", location);
+  };
+
+  const filteredProperties = properties
+    .filter(property => {
+      const price = parseInt(property.price.replace(/[^0-9]/g, ''));
+      const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           property.location.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPrice = price >= priceFilter.min && price <= priceFilter.max;
+      return matchesSearch && matchesPrice;
+    })
+    .map(property => {
+      // Add distance if user location is available
+      if (userLocation) {
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          property.coordinates.lat,
+          property.coordinates.lng
+        );
+        return { ...property, distance: Math.round(distance * 10) / 10 };
+      }
+      return property;
+    })
+    .sort((a, b) => {
+      // Sort by distance if available
+      if (a.distance !== undefined && b.distance !== undefined) {
+        return a.distance - b.distance;
+      }
+      return 0;
+    });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -150,8 +191,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Search and Filters */}
+      {/* Location Search and Filters */}
       <div className="container mx-auto px-6 -mt-8 relative z-10">
+        <LocationSearch onLocationSelect={handleLocationSelect} />
+        
         <SearchFilters
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -166,17 +209,24 @@ const Index = () => {
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Available Properties</h2>
           <p className="text-gray-600 text-lg">
             {filteredProperties.length} properties found
+            {userLocation && " (sorted by distance from your location)"}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProperties.map((property, index) => (
-            <PropertyCard
-              key={property.id}
-              property={property}
-              onGetDirections={handleGetDirections}
-              index={index}
-            />
+            <div key={property.id} className="relative">
+              <PropertyCard
+                property={property}
+                onGetDirections={handleGetDirections}
+                index={index}
+              />
+              {property.distance !== undefined && (
+                <div className="absolute top-4 right-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
+                  {property.distance} km away
+                </div>
+              )}
+            </div>
           ))}
         </div>
 
