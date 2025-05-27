@@ -349,7 +349,7 @@ const Index = () => {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-2xl font-bold mb-4">RentFind Kenya</h3>
+              <h3 className="text-2xl font-bold mb-4">House Hunt Kenya</h3>
               <p className="text-gray-300">
                 Your trusted partner in finding the perfect empty rental house in Nairobi and beyond.
               </p>
