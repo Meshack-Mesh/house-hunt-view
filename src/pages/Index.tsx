@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PropertyCard } from "@/components/PropertyCard";
 import { PaymentModal } from "@/components/PaymentModal";
@@ -172,6 +173,7 @@ const Index = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceFilter, setPriceFilter] = useState({ min: 0, max: 200000 });
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
 
   // Calculate distance between two coordinates (in km)
@@ -214,22 +216,34 @@ const Index = () => {
                            property.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPrice = price >= priceFilter.min && price <= priceFilter.max;
       
-      // If user has selected a location, only show properties in that area
+      // Property type filter
+      const matchesPropertyType = propertyTypeFilter === "all" || 
+                                 property.title.toLowerCase().includes(propertyTypeFilter.toLowerCase());
+      
+      // If user has selected a location, filter accordingly
       let matchesLocation = true;
-      if (userLocation && userLocation.address !== "Current Location") {
-        const searchLocation = userLocation.address.toLowerCase();
-        const propertyLocation = property.location.toLowerCase();
-        
-        // Check if the property location contains the searched location
-        matchesLocation = propertyLocation.includes(searchLocation) || 
-                         searchLocation.includes(propertyLocation.split(',')[0].trim().toLowerCase());
+      if (userLocation) {
+        if (userLocation.address === "Current Location") {
+          // Show all properties sorted by distance for current location
+          matchesLocation = true;
+        } else if (userLocation.address === "Nairobi County") {
+          // Show all properties in Nairobi (no location filtering)
+          matchesLocation = true;
+        } else {
+          // Filter by specific location
+          const searchLocation = userLocation.address.toLowerCase();
+          const propertyLocation = property.location.toLowerCase();
+          
+          matchesLocation = propertyLocation.includes(searchLocation) || 
+                           searchLocation.includes(propertyLocation.split(',')[0].trim().toLowerCase());
+        }
       }
       
-      return matchesSearch && matchesPrice && matchesLocation;
+      return matchesSearch && matchesPrice && matchesPropertyType && matchesLocation;
     })
     .map(property => {
-      // Add distance if user location is available
-      if (userLocation) {
+      // Add distance if user location is available and not searching county-wide
+      if (userLocation && userLocation.address !== "Nairobi County") {
         const distance = calculateDistance(
           userLocation.lat,
           userLocation.lng,
@@ -284,6 +298,8 @@ const Index = () => {
           setSearchTerm={setSearchTerm}
           priceFilter={priceFilter}
           setPriceFilter={setPriceFilter}
+          propertyTypeFilter={propertyTypeFilter}
+          setPropertyTypeFilter={setPropertyTypeFilter}
         />
       </div>
 
@@ -293,8 +309,9 @@ const Index = () => {
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Available Empty Houses</h2>
           <p className="text-gray-600 text-lg">
             {filteredProperties.length} empty rental houses found
-            {userLocation && userLocation.address !== "Current Location" && ` in ${userLocation.address}`}
+            {userLocation && userLocation.address !== "Current Location" && userLocation.address !== "Nairobi County" && ` in ${userLocation.address}`}
             {userLocation && userLocation.address === "Current Location" && " (sorted by distance from your location)"}
+            {userLocation && userLocation.address === "Nairobi County" && " in Nairobi County"}
           </p>
         </div>
 
@@ -318,7 +335,7 @@ const Index = () => {
         {filteredProperties.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-xl">
-              {userLocation && userLocation.address !== "Current Location" 
+              {userLocation && userLocation.address !== "Current Location" && userLocation.address !== "Nairobi County"
                 ? `No empty houses found in ${userLocation.address}. Try searching a different area.`
                 : "No empty houses match your search criteria."
               }

@@ -10,6 +10,7 @@ interface LocationSearchProps {
 
 // Nairobi constituencies with approximate coordinates
 const nairobiConstituencies = [
+  { name: "Nairobi County", lat: -1.2921, lng: 36.8219 }, // Central Nairobi coordinates
   { name: "Embakasi East", lat: -1.3215, lng: 36.8873 },
   { name: "Embakasi North", lat: -1.2823, lng: 36.8473 },
   { name: "Embakasi South", lat: -1.3456, lng: 36.8742 },
@@ -118,7 +119,7 @@ export const LocationSearch = ({ onLocationSelect }: LocationSearchProps) => {
             <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
               {allLocations.map((location) => (
                 <SelectItem key={location.name} value={location.name}>
-                  {location.name} {location.type === 'constituency' ? '(Constituency)' : ''}
+                  {location.name} {location.type === 'constituency' && location.name !== 'Nairobi County' ? '(Constituency)' : ''}
                 </SelectItem>
               ))}
             </SelectContent>
