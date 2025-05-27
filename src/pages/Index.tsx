@@ -112,9 +112,9 @@ const properties: Property[] = [
   },
   {
     id: 7,
-    title: "Spacious 3-Bedroom Apartment",
+    title: "Spacious 2-Bedroom Apartment",
     location: "Kawangware, Nairobi",
-    price: "KSh 35,000",
+    price: "KSh 15,000",
     period: "per month",
     bedrooms: 3,
     bathrooms: 2,
@@ -368,7 +368,7 @@ const Index = () => {
               <div className="space-y-2 text-gray-300">
                 <div className="flex items-center">
                   <Phone size={16} className="mr-2" />
-                  <span>+254 700 123 456</span>
+                  <span>+254 703 781 416</span>
                 </div>
                 <div className="flex items-center">
                   <Mail size={16} className="mr-2" />

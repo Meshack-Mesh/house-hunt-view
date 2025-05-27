@@ -35,11 +35,11 @@ export const Header = () => {
           <div className="hidden lg:flex items-center space-x-4 text-sm text-gray-600">
             <div className="flex items-center">
               <Phone size={16} className="mr-1" />
-              <span>+254 700 123 456</span>
+              <span>+254 703 781 416</span>
             </div>
             <div className="flex items-center">
               <Mail size={16} className="mr-1" />
-              <span>info@rentfindkenya.com</span>
+              <span>meshackmwima@gmail.com</span>
             </div>
           </div>
 
