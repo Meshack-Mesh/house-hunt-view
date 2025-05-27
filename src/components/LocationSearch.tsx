@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface LocationSearchProps {
   onLocationSelect: (location: { lat: number; lng: number; address: string }) => void;
@@ -41,12 +42,17 @@ const popularLocations = [
   { name: "Roysambu", constituency: "Roysambu", lat: -1.2000, lng: 36.8833 },
 ];
 
+// Combine constituencies and popular locations for the dropdown
+const allLocations = [
+  ...nairobiConstituencies.map(c => ({ name: c.name, lat: c.lat, lng: c.lng, type: 'constituency' })),
+  ...popularLocations.map(l => ({ name: l.name, lat: l.lat, lng: l.lng, type: 'location' }))
+];
+
 export const LocationSearch = ({ onLocationSelect }: LocationSearchProps) => {
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [address, setAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedConstituency, setSelectedConstituency] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedArea, setSelectedArea] = useState("");
 
   // Get user's current location
   const getCurrentLocation = () => {
@@ -72,133 +78,66 @@ export const LocationSearch = ({ onLocationSelect }: LocationSearchProps) => {
     }
   };
 
-  // Handle constituency selection
-  const handleConstituencySelect = (constituencyName: string) => {
-    setSelectedConstituency(constituencyName);
-    const constituency = nairobiConstituencies.find(c => c.name === constituencyName);
-    if (constituency) {
-      setCurrentLocation({ lat: constituency.lat, lng: constituency.lng });
-      setAddress(constituencyName);
-      onLocationSelect({ lat: constituency.lat, lng: constituency.lng, address: constituencyName });
+  // Handle area selection and search
+  const handleAreaSearch = () => {
+    if (!selectedArea) {
+      alert("Please select an area first.");
+      return;
     }
-  };
 
-  // Handle specific location selection
-  const handleLocationSelect = (locationName: string) => {
-    setSelectedLocation(locationName);
-    const location = popularLocations.find(l => l.name === locationName);
+    const location = allLocations.find(l => l.name === selectedArea);
     if (location) {
       setCurrentLocation({ lat: location.lat, lng: location.lng });
-      setAddress(locationName);
-      onLocationSelect({ lat: location.lat, lng: location.lng, address: locationName });
-    }
-  };
-
-  // Search for custom location
-  const searchCustomLocation = () => {
-    if (!address.trim()) return;
-    
-    // Simple search within popular locations
-    const foundLocation = popularLocations.find(l => 
-      l.name.toLowerCase().includes(address.toLowerCase())
-    );
-    
-    if (foundLocation) {
-      setCurrentLocation({ lat: foundLocation.lat, lng: foundLocation.lng });
-      onLocationSelect({ lat: foundLocation.lat, lng: foundLocation.lng, address: foundLocation.name });
-    } else {
-      // If not found in popular locations, try constituencies
-      const foundConstituency = nairobiConstituencies.find(c => 
-        c.name.toLowerCase().includes(address.toLowerCase())
-      );
-      
-      if (foundConstituency) {
-        setCurrentLocation({ lat: foundConstituency.lat, lng: foundConstituency.lng });
-        onLocationSelect({ lat: foundConstituency.lat, lng: foundConstituency.lng, address: foundConstituency.name });
-      } else {
-        alert("Location not found. Please try selecting from the dropdown or use a different search term.");
-      }
+      setAddress(location.name);
+      onLocationSelect({ lat: location.lat, lng: location.lng, address: location.name });
     }
   };
 
   return (
     <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100 mb-4">
       <div className="flex flex-col space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Location Search</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Find Empty Houses in Your Area</h3>
         
         {/* Current Location Button */}
-        <button
+        <Button
           onClick={getCurrentLocation}
           disabled={isLoading}
-          className="flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+          className="flex items-center justify-center space-x-2 bg-green-600 text-white hover:bg-green-700"
         >
           <Navigation size={20} />
           <span>{isLoading ? "Getting Location..." : "Use My Current Location"}</span>
-        </button>
+        </Button>
 
-        {/* Constituency Dropdown */}
+        {/* Area Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Constituency</label>
-          <Select value={selectedConstituency} onValueChange={handleConstituencySelect}>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Area in Nairobi</label>
+          <Select value={selectedArea} onValueChange={setSelectedArea}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choose a constituency in Nairobi" />
+              <SelectValue placeholder="Choose an area to search for empty houses" />
             </SelectTrigger>
             <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-              {nairobiConstituencies.map((constituency) => (
-                <SelectItem key={constituency.name} value={constituency.name}>
-                  {constituency.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Popular Locations Dropdown */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Or Select Popular Location</label>
-          <Select value={selectedLocation} onValueChange={handleLocationSelect}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choose a popular location" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-              {popularLocations.map((location) => (
+              {allLocations.map((location) => (
                 <SelectItem key={location.name} value={location.name}>
-                  {location.name} ({location.constituency})
+                  {location.name} {location.type === 'constituency' ? '(Constituency)' : ''}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Manual Search */}
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Or type a location (e.g., Kawangware, Pipeline)"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                searchCustomLocation();
-              }
-            }}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        <button
-          onClick={searchCustomLocation}
-          disabled={!address.trim()}
-          className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+        {/* Search Button */}
+        <Button
+          onClick={handleAreaSearch}
+          disabled={!selectedArea}
+          className="bg-blue-600 text-white hover:bg-blue-700"
         >
-          Search Location
-        </button>
+          Search Empty Houses in {selectedArea || 'Selected Area'}
+        </Button>
 
         {currentLocation && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
             <p className="text-green-800 text-sm">
-              <strong>Selected Location:</strong> {address || `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`}
+              <strong>Searching in:</strong> {address}
             </p>
           </div>
         )}
