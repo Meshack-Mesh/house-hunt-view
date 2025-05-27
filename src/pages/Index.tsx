@@ -213,7 +213,19 @@ const Index = () => {
       const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            property.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPrice = price >= priceFilter.min && price <= priceFilter.max;
-      return matchesSearch && matchesPrice;
+      
+      // If user has selected a location, only show properties in that area
+      let matchesLocation = true;
+      if (userLocation && userLocation.address !== "Current Location") {
+        const searchLocation = userLocation.address.toLowerCase();
+        const propertyLocation = property.location.toLowerCase();
+        
+        // Check if the property location contains the searched location
+        matchesLocation = propertyLocation.includes(searchLocation) || 
+                         searchLocation.includes(propertyLocation.split(',')[0].trim().toLowerCase());
+      }
+      
+      return matchesSearch && matchesPrice && matchesLocation;
     })
     .map(property => {
       // Add distance if user location is available
@@ -281,7 +293,8 @@ const Index = () => {
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Available Empty Houses</h2>
           <p className="text-gray-600 text-lg">
             {filteredProperties.length} empty rental houses found
-            {userLocation && " (sorted by distance from your location)"}
+            {userLocation && userLocation.address !== "Current Location" && ` in ${userLocation.address}`}
+            {userLocation && userLocation.address === "Current Location" && " (sorted by distance from your location)"}
           </p>
         </div>
 
@@ -304,7 +317,12 @@ const Index = () => {
 
         {filteredProperties.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-gray-500 text-xl">No empty houses match your search criteria.</p>
+            <p className="text-gray-500 text-xl">
+              {userLocation && userLocation.address !== "Current Location" 
+                ? `No empty houses found in ${userLocation.address}. Try searching a different area.`
+                : "No empty houses match your search criteria."
+              }
+            </p>
           </div>
         )}
       </section>
