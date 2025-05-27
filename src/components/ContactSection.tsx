@@ -56,7 +56,7 @@ export const ContactSection = () => {
               <h4 className="text-xl font-bold mb-4">Follow Us</h4>
               <div className="flex space-x-4">
                 <a 
-                  href="https://facebook.com/rentfindkenya" 
+                  href="https://www.facebook.com/meshack.mwima"
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-blue-600 p-3 rounded-full hover:bg-blue-700 transition-colors"
@@ -64,7 +64,7 @@ export const ContactSection = () => {
                   <Facebook size={20} />
                 </a>
                 <a 
-                  href="https://twitter.com/rentfindkenya" 
+                  href="https://x.com/meshtriplem?t=BODvAHvAN_5BjzgF_sKaKQ&s=08"
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-sky-500 p-3 rounded-full hover:bg-sky-600 transition-colors"
@@ -80,7 +80,7 @@ export const ContactSection = () => {
                   <Instagram size={20} />
                 </a>
                 <a 
-                  href="https://linkedin.com/company/rentfindkenya" 
+                  href="https://www.instagram.com/trip.plem?igsh=MWMwZWx1amV2NjZ3Yw=="
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-blue-700 p-3 rounded-full hover:bg-blue-800 transition-colors"
@@ -89,7 +89,7 @@ export const ContactSection = () => {
                 </a>
               </div>
               <div className="mt-4 text-sm text-gray-400">
-                <p>@RentFindKenya - Follow us for daily property updates</p>
+                <p>@HousehuntKenya - Follow us for daily property updates</p>
               </div>
             </div>
           </div>

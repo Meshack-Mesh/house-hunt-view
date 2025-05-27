@@ -276,7 +276,7 @@ const Index = () => {
             Find Your Perfect <span className="text-yellow-300">Rental Home</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
-            Discover amazing empty rental houses across Nairobi. Pay only KSh 20 to unlock exact locations and directions.
+            Discover amazing empty rental houses across Nairobi. Find your way around the city seamless.
           </p>
           <div className="flex items-center justify-center space-x-6 text-lg">
             <div className="flex items-center">
@@ -389,7 +389,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 RentFind Kenya. All rights reserved.</p>
+            <p>&copy; 2024 House Hunt Kenya. All rights reserved.</p>
           </div>
         </div>
       </footer>
