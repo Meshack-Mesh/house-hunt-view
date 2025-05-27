@@ -5,6 +5,14 @@ import { Menu, X, Home, Phone, Mail } from "lucide-react";
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-6">
@@ -17,18 +25,30 @@ export const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+            <button 
+              onClick={() => scrollToSection('home')}
+              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+            >
               Home
-            </a>
-            <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => scrollToSection('properties')}
+              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+            >
               Properties
-            </a>
-            <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => scrollToSection('about')}
+              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+            >
               About
-            </a>
-            <a href="#" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => scrollToSection('contact')}
+              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+            >
               Contact
-            </a>
+            </button>
           </nav>
 
           {/* Contact Info */}
@@ -56,18 +76,30 @@ export const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col space-y-2">
-              <a href="#" className="text-gray-700 hover:text-blue-600 py-2 transition-colors">
+              <button 
+                onClick={() => scrollToSection('home')}
+                className="text-gray-700 hover:text-blue-600 py-2 transition-colors text-left"
+              >
                 Home
-              </a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 py-2 transition-colors">
+              </button>
+              <button 
+                onClick={() => scrollToSection('properties')}
+                className="text-gray-700 hover:text-blue-600 py-2 transition-colors text-left"
+              >
                 Properties
-              </a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 py-2 transition-colors">
+              </button>
+              <button 
+                onClick={() => scrollToSection('about')}
+                className="text-gray-700 hover:text-blue-600 py-2 transition-colors text-left"
+              >
                 About
-              </a>
-              <a href="#" className="text-gray-700 hover:text-blue-600 py-2 transition-colors">
+              </button>
+              <button 
+                onClick={() => scrollToSection('contact')}
+                className="text-gray-700 hover:text-blue-600 py-2 transition-colors text-left"
+              >
                 Contact
-              </a>
+              </button>
             </nav>
           </div>
         )}

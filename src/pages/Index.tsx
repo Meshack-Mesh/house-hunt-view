@@ -1,10 +1,12 @@
-
 import { useState } from "react";
 import { PropertyCard } from "@/components/PropertyCard";
 import { PaymentModal } from "@/components/PaymentModal";
 import { Header } from "@/components/Header";
 import { SearchFilters } from "@/components/SearchFilters";
 import { LocationSearch } from "@/components/LocationSearch";
+import { PropertiesByArea } from "@/components/PropertiesByArea";
+import { AboutSection } from "@/components/AboutSection";
+import { ContactSection } from "@/components/ContactSection";
 import { MapIcon, Phone, Mail } from "lucide-react";
 
 // Define property type with optional distance
@@ -267,7 +269,7 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
+      <section id="home" className="relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
         <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         <div className="relative container mx-auto px-6 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
@@ -303,7 +305,7 @@ const Index = () => {
         />
       </div>
 
-      {/* Properties Grid */}
+      {/* Search Results Section */}
       <section className="container mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Available Empty Houses</h2>
@@ -344,8 +346,17 @@ const Index = () => {
         )}
       </section>
 
+      {/* Properties by Area Section */}
+      <PropertiesByArea properties={properties} onGetDirections={handleGetDirections} />
+
+      {/* About Section */}
+      <AboutSection />
+
+      {/* Contact Section */}
+      <ContactSection />
+
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
+      <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -357,10 +368,10 @@ const Index = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><button onClick={() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white transition-colors">Home</button></li>
+                <li><button onClick={() => document.getElementById('properties')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white transition-colors">Properties</button></li>
+                <li><button onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white transition-colors">About</button></li>
+                <li><button onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-white transition-colors">Contact</button></li>
               </ul>
             </div>
             <div>
@@ -372,7 +383,7 @@ const Index = () => {
                 </div>
                 <div className="flex items-center">
                   <Mail size={16} className="mr-2" />
-                  <span>info@rentfindkenya.com</span>
+                  <span>meshackmwima@gmail.com</span>
                 </div>
               </div>
             </div>
