@@ -72,7 +72,7 @@ export const ContactSection = () => {
                   <Twitter size={20} />
                 </a>
                 <a 
-                  href="https://instagram.com/rentfindkenya" 
+                  href="https://www.instagram.com/trip.plem?igsh=MWMwZWx1amV2NjZ3Yw=="
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-pink-600 p-3 rounded-full hover:bg-pink-700 transition-colors"
@@ -80,7 +80,7 @@ export const ContactSection = () => {
                   <Instagram size={20} />
                 </a>
                 <a 
-                  href="https://www.instagram.com/trip.plem?igsh=MWMwZWx1amV2NjZ3Yw=="
+                  href="https://www.linkedin.com/in/meshack-mwima-27992a23b?"
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-blue-700 p-3 rounded-full hover:bg-blue-800 transition-colors"
