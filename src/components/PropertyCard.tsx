@@ -2,7 +2,7 @@
 import { MapIcon, Phone, Star, Bed, Bath, Square } from "lucide-react";
 
 interface Property {
-  id: number;
+  id: string; // Changed from number to string (UUID)
   title: string;
   location: string;
   price: string;

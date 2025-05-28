@@ -13,9 +13,9 @@ import { ContactSection } from "@/components/ContactSection";
 import { Button } from "@/components/ui/button";
 import { MapIcon, Phone, Mail, Plus, UserCheck, Building } from "lucide-react";
 
-// Updated property type to match database
+// Updated property type to match database schema
 interface Property {
-  id: string;
+  id: string; // Changed from number to string (UUID)
   title: string;
   location: string;
   price: number;
@@ -25,9 +25,9 @@ interface Property {
   area: string;
   description: string;
   features: string[];
-  coordinates: { lat: number; lng: number } | null;
+  coordinates: { lat: number; lng: number } | null; // Explicitly typed instead of Json
   distance?: number;
-  image?: string; // Will be added when we fetch images
+  image?: string;
 }
 
 const Index = () => {
@@ -69,7 +69,7 @@ const Index = () => {
         area: property.area,
         description: property.description || '',
         features: property.features || [],
-        coordinates: property.coordinates,
+        coordinates: property.coordinates as { lat: number; lng: number } | null,
         image: property.property_images?.find((img: any) => img.is_primary)?.image_url || 
                property.property_images?.[0]?.image_url ||
                "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
@@ -294,12 +294,15 @@ const Index = () => {
       </section>
 
       {/* Properties by Area Section */}
-      <PropertiesByArea properties={filteredProperties.map(p => ({
-        ...p,
-        price: `KSh ${p.price.toLocaleString()}`,
-        image: p.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
-        coordinates: p.coordinates || { lat: -1.2921, lng: 36.8219 }
-      }))} onGetDirections={handleGetDirections} />
+      <PropertiesByArea 
+        properties={filteredProperties.map(p => ({
+          ...p,
+          price: `KSh ${p.price.toLocaleString()}`,
+          image: p.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
+          coordinates: p.coordinates || { lat: -1.2921, lng: 36.8219 }
+        }))} 
+        onGetDirections={handleGetDirections} 
+      />
 
       {/* About Section */}
       <AboutSection />

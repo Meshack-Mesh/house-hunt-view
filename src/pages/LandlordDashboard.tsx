@@ -9,7 +9,7 @@ import { Plus, MapPin, Bed, Bath, Square, Edit, Trash2, Upload } from 'lucide-re
 import { useToast } from '@/hooks/use-toast';
 
 interface Property {
-  id: string;
+  id: string; // Changed from number to string (UUID)
   title: string;
   description: string;
   price: number;
@@ -18,7 +18,7 @@ interface Property {
   bathrooms: number;
   area: string;
   location: string;
-  coordinates: { lat: number; lng: number } | null;
+  coordinates: { lat: number; lng: number } | null; // Changed from Json to explicit type
   features: string[];
   status: string;
   created_at: string;
@@ -69,7 +69,25 @@ const LandlordDashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProperties(data || []);
+      
+      // Transform the data to match our Property interface
+      const transformedProperties: Property[] = (data || []).map(property => ({
+        id: property.id,
+        title: property.title,
+        description: property.description || '',
+        price: property.price,
+        period: property.period,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        area: property.area,
+        location: property.location,
+        coordinates: property.coordinates as { lat: number; lng: number } | null,
+        features: property.features || [],
+        status: property.status || 'available',
+        created_at: property.created_at || ''
+      }));
+      
+      setProperties(transformedProperties);
     } catch (error) {
       toast({
         title: "Error",

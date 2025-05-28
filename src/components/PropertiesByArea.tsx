@@ -2,7 +2,7 @@
 import { PropertyCard } from "./PropertyCard";
 
 interface Property {
-  id: number;
+  id: string; // Changed from number to string (UUID)
   title: string;
   location: string;
   price: string;
