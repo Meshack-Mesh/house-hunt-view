@@ -1,24 +1,9 @@
-
 import { PropertyCard } from "./PropertyCard";
-
-interface Property {
-  id: string; // Changed from number to string (UUID)
-  title: string;
-  location: string;
-  price: string;
-  period: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  image: string;
-  description: string;
-  features: string[];
-  coordinates: { lat: number; lng: number };
-}
+import { DisplayProperty } from "@/types/Property";
 
 interface PropertiesByAreaProps {
-  properties: Property[];
-  onGetDirections: (property: Property) => void;
+  properties: DisplayProperty[];
+  onGetDirections: (property: DisplayProperty) => void;
 }
 
 export const PropertiesByArea = ({ properties, onGetDirections }: PropertiesByAreaProps) => {
@@ -30,7 +15,7 @@ export const PropertiesByArea = ({ properties, onGetDirections }: PropertiesByAr
     }
     acc[area].push(property);
     return acc;
-  }, {} as Record<string, Property[]>);
+  }, {} as Record<string, DisplayProperty[]>);
 
   return (
     <section id="properties" className="py-20 bg-gray-50">

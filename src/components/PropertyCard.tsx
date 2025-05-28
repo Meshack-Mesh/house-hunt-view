@@ -1,24 +1,9 @@
-
 import { MapIcon, Phone, Star, Bed, Bath, Square } from "lucide-react";
-
-interface Property {
-  id: string; // Changed from number to string (UUID)
-  title: string;
-  location: string;
-  price: string;
-  period: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  image: string;
-  description: string;
-  features: string[];
-  coordinates: { lat: number; lng: number };
-}
+import { DisplayProperty } from "@/types/Property";
 
 interface PropertyCardProps {
-  property: Property;
-  onGetDirections: (property: Property) => void;
+  property: DisplayProperty;
+  onGetDirections: (property: DisplayProperty) => void;
   index: number;
 }
 

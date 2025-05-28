@@ -12,6 +12,7 @@ import { AboutSection } from "@/components/AboutSection";
 import { ContactSection } from "@/components/ContactSection";
 import { Button } from "@/components/ui/button";
 import { MapIcon, Phone, Mail, Plus, UserCheck, Building } from "lucide-react";
+import { Property, DisplayProperty } from "@/types/Property";
 
 // Updated property type to match database schema
 interface Property {
@@ -32,7 +33,7 @@ interface Property {
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<DisplayProperty | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceFilter, setPriceFilter] = useState({ min: 0, max: 200000 });
@@ -97,7 +98,7 @@ const Index = () => {
     return d;
   };
 
-  const handleGetDirections = (property: Property) => {
+  const handleGetDirections = (property: DisplayProperty) => {
     setSelectedProperty(property);
     setIsPaymentModalOpen(true);
   };
@@ -164,6 +165,14 @@ const Index = () => {
       }
       return 0;
     });
+
+  // Convert Property to DisplayProperty for components
+  const convertToDisplayProperty = (property: Property): DisplayProperty => ({
+    ...property,
+    price: `KSh ${property.price.toLocaleString()}`,
+    image: property.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
+    coordinates: property.coordinates || { lat: -1.2921, lng: 36.8219 }
+  });
 
   if (authLoading || loading) {
     return (
@@ -263,12 +272,7 @@ const Index = () => {
           {filteredProperties.map((property, index) => (
             <div key={property.id} className="relative">
               <PropertyCard
-                property={{
-                  ...property,
-                  price: `KSh ${property.price.toLocaleString()}`,
-                  image: property.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
-                  coordinates: property.coordinates || { lat: -1.2921, lng: 36.8219 }
-                }}
+                property={convertToDisplayProperty(property)}
                 onGetDirections={handleGetDirections}
                 index={index}
               />
@@ -295,12 +299,7 @@ const Index = () => {
 
       {/* Properties by Area Section */}
       <PropertiesByArea 
-        properties={filteredProperties.map(p => ({
-          ...p,
-          price: `KSh ${p.price.toLocaleString()}`,
-          image: p.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
-          coordinates: p.coordinates || { lat: -1.2921, lng: 36.8219 }
-        }))} 
+        properties={filteredProperties.map(convertToDisplayProperty)} 
         onGetDirections={handleGetDirections} 
       />
 
