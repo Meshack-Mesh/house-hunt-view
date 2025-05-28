@@ -52,6 +52,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (data && !error) {
       setProfile(data);
+    } else {
+      console.error('Error fetching profile:', error);
     }
   };
 
@@ -97,19 +99,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     fullName: string,
     role: 'landlord' | 'tenant'
   ) => {
-    const { error } = await supabase.auth.signUp(
-      {
-        email,
-        password,
-      },
-      {
-        data: {
-          full_name: fullName,
-          role: role,
-        },
-      }
-    );
-    return { error };
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error || !data.user) {
+      return { error };
+    }
+
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: data.user.id,
+      email,
+      full_name: fullName,
+      role,
+    });
+
+    return { error: profileError };
   };
 
   const signOut = async () => {
@@ -126,9 +132,5 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
