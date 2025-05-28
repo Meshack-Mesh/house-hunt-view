@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,6 +65,7 @@ const LandlordDashboard = () => {
         location: property.location,
         coordinates: property.coordinates as { lat: number; lng: number } | null,
         features: property.features || [],
+        status: property.status || 'available'
       }));
       
       setProperties(transformedProperties);
@@ -154,7 +154,7 @@ const LandlordDashboard = () => {
       latitude: property.coordinates?.lat.toString() || '',
       longitude: property.coordinates?.lng.toString() || '',
       features: property.features.join(', '),
-      status: 'available'
+      status: property.status || 'available'
     });
     setShowAddForm(true);
   };

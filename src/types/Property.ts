@@ -14,6 +14,7 @@ export interface Property {
   coordinates: { lat: number; lng: number } | null;
   distance?: number;
   image?: string;
+  status?: string; // Add status for landlord dashboard
 }
 
 // Property interface for display components (with formatted price)

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,23 +14,6 @@ import { ContactSection } from "@/components/ContactSection";
 import { Button } from "@/components/ui/button";
 import { MapIcon, Phone, Mail, Plus, UserCheck, Building } from "lucide-react";
 import { Property, DisplayProperty } from "@/types/Property";
-
-// Updated property type to match database schema
-interface Property {
-  id: string; // Changed from number to string (UUID)
-  title: string;
-  location: string;
-  price: number;
-  period: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  description: string;
-  features: string[];
-  coordinates: { lat: number; lng: number } | null; // Explicitly typed instead of Json
-  distance?: number;
-  image?: string;
-}
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
