@@ -9,7 +9,172 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      contact_inquiries: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          property_id: string
+          status: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          property_id: string
+          status?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          property_id?: string
+          status?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_inquiries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_inquiries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          area: string
+          bathrooms: number
+          bedrooms: number
+          coordinates: Json | null
+          created_at: string | null
+          description: string | null
+          features: string[] | null
+          id: string
+          landlord_id: string
+          location: string
+          period: string
+          price: number
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          area: string
+          bathrooms?: number
+          bedrooms?: number
+          coordinates?: Json | null
+          created_at?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          landlord_id: string
+          location: string
+          period?: string
+          price: number
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          area?: string
+          bathrooms?: number
+          bedrooms?: number
+          coordinates?: Json | null
+          created_at?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          landlord_id?: string
+          location?: string
+          period?: string
+          price?: number
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_landlord_id_fkey"
+            columns: ["landlord_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_images: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          is_primary: boolean | null
+          property_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          is_primary?: boolean | null
+          property_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          is_primary?: boolean | null
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_images_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +183,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "landlord" | "tenant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +298,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["landlord", "tenant"],
+    },
   },
 } as const

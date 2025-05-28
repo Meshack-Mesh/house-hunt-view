@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { PropertyCard } from "@/components/PropertyCard";
 import { PaymentModal } from "@/components/PaymentModal";
 import { Header } from "@/components/Header";
@@ -7,176 +10,78 @@ import { LocationSearch } from "@/components/LocationSearch";
 import { PropertiesByArea } from "@/components/PropertiesByArea";
 import { AboutSection } from "@/components/AboutSection";
 import { ContactSection } from "@/components/ContactSection";
-import { MapIcon, Phone, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapIcon, Phone, Mail, Plus, UserCheck, Building } from "lucide-react";
 
-// Define property type with optional distance
+// Updated property type to match database
 interface Property {
-  id: number;
+  id: string;
   title: string;
   location: string;
-  price: string;
+  price: number;
   period: string;
   bedrooms: number;
   bathrooms: number;
   area: string;
-  image: string;
   description: string;
   features: string[];
-  coordinates: { lat: number; lng: number };
+  coordinates: { lat: number; lng: number } | null;
   distance?: number;
+  image?: string; // Will be added when we fetch images
 }
 
-// Sample property data with actual house images
-const properties: Property[] = [
-  {
-    id: 1,
-    title: "Modern 2-Bedroom Apartment",
-    location: "Westlands, Nairobi",
-    price: "KSh 45,000",
-    period: "per month",
-    bedrooms: 2,
-    bathrooms: 2,
-    area: "120 sqm",
-    image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
-    description: "Spacious modern apartment with stunning city views, fully furnished with contemporary amenities.",
-    features: ["Parking", "Security", "Generator", "Water"],
-    coordinates: { lat: -1.2577, lng: 36.7888 }
-  },
-  {
-    id: 2,
-    title: "Luxury 3-Bedroom Villa",
-    location: "Karen, Nairobi",
-    price: "KSh 85,000",
-    period: "per month",
-    bedrooms: 3,
-    bathrooms: 3,
-    area: "250 sqm",
-    image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=800&h=600&fit=crop",
-    description: "Beautiful villa in a quiet neighborhood with garden and modern finishes.",
-    features: ["Garden", "Parking", "Swimming Pool", "Security"],
-    coordinates: { lat: -1.3197, lng: 36.7084 }
-  },
-  {
-    id: 3,
-    title: "Cozy 1-Bedroom Studio",
-    location: "Kilimani, Nairobi",
-    price: "KSh 25,000",
-    period: "per month",
-    bedrooms: 1,
-    bathrooms: 1,
-    area: "65 sqm",
-    image: "https://images.unsplash.com/photo-1431576901776-e539bd916ba2?w=800&h=600&fit=crop",
-    description: "Perfect for young professionals, modern studio with all amenities included.",
-    features: ["Furnished", "WiFi", "Security", "Lift"],
-    coordinates: { lat: -1.2921, lng: 36.7842 }
-  },
-  {
-    id: 4,
-    title: "Family 4-Bedroom House",
-    location: "Runda, Nairobi",
-    price: "KSh 120,000",
-    period: "per month",
-    bedrooms: 4,
-    bathrooms: 4,
-    area: "300 sqm",
-    image: "https://images.unsplash.com/photo-1459767129954-1b1c1f9b9ace?w=800&h=600&fit=crop",
-    description: "Spacious family home with large compound and modern amenities.",
-    features: ["Large Compound", "Parking", "Generator", "Borehole"],
-    coordinates: { lat: -1.2297, lng: 36.7633 }
-  },
-  {
-    id: 5,
-    title: "Executive 2-Bedroom Apartment",
-    location: "Upperhill, Nairobi",
-    price: "KSh 65,000",
-    period: "per month",
-    bedrooms: 2,
-    bathrooms: 2,
-    area: "140 sqm",
-    image: "https://images.unsplash.com/photo-1460574283810-2aab119d8511?w=800&h=600&fit=crop",
-    description: "High-end apartment in prime location with city skyline views.",
-    features: ["City View", "Gym", "Swimming Pool", "Concierge"],
-    coordinates: { lat: -1.2921, lng: 36.8219 }
-  },
-  {
-    id: 6,
-    title: "Affordable 1-Bedroom Flat",
-    location: "Eastleigh, Nairobi",
-    price: "KSh 18,000",
-    period: "per month",
-    bedrooms: 1,
-    bathrooms: 1,
-    area: "50 sqm",
-    image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
-    description: "Budget-friendly apartment perfect for students and young professionals.",
-    features: ["Security", "Water", "Near Transport", "Shops Nearby"],
-    coordinates: { lat: -1.2841, lng: 36.8358 }
-  },
-  {
-    id: 7,
-    title: "Spacious 2-Bedroom Apartment",
-    location: "Kawangware, Nairobi",
-    price: "KSh 15,000",
-    period: "per month",
-    bedrooms: 3,
-    bathrooms: 2,
-    area: "150 sqm",
-    image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=800&h=600&fit=crop",
-    description: "Well-maintained apartment in Kawangware with easy access to public transport.",
-    features: ["Parking", "Security", "Water", "Near Market"],
-    coordinates: { lat: -1.2598, lng: 36.7345 }
-  },
-  {
-    id: 8,
-    title: "Modern 2-Bedroom House",
-    location: "Pipeline, Embakasi",
-    price: "KSh 28,000",
-    period: "per month",
-    bedrooms: 2,
-    bathrooms: 2,
-    area: "100 sqm",
-    image: "https://images.unsplash.com/photo-1431576901776-e539bd916ba2?w=800&h=600&fit=crop",
-    description: "Newly built house in Pipeline area with modern amenities and secure compound.",
-    features: ["Secure Compound", "Parking", "Water", "Electricity"],
-    coordinates: { lat: -1.3456, lng: 36.8742 }
-  },
-  {
-    id: 9,
-    title: "Furnished 1-Bedroom Apartment",
-    location: "Donholm, Nairobi",
-    price: "KSh 22,000",
-    period: "per month",
-    bedrooms: 1,
-    bathrooms: 1,
-    area: "70 sqm",
-    image: "https://images.unsplash.com/photo-1459767129954-1b1c1f9b9ace?w=800&h=600&fit=crop",
-    description: "Fully furnished apartment in Donholm, perfect for working professionals.",
-    features: ["Furnished", "Security", "Water", "Internet Ready"],
-    coordinates: { lat: -1.2823, lng: 36.8473 }
-  },
-  {
-    id: 10,
-    title: "Family 3-Bedroom House",
-    location: "Kibera, Nairobi",
-    price: "KSh 20,000",
-    period: "per month",
-    bedrooms: 3,
-    bathrooms: 1,
-    area: "90 sqm",
-    image: "https://images.unsplash.com/photo-1460574283810-2aab119d8511?w=800&h=600&fit=crop",
-    description: "Affordable family house in Kibera with basic amenities and good community access.",
-    features: ["Community Access", "Water", "Electricity", "Schools Nearby"],
-    coordinates: { lat: -1.3123, lng: 36.7890 }
-  }
-];
-
 const Index = () => {
+  const { user, profile, loading: authLoading } = useAuth();
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceFilter, setPriceFilter] = useState({ min: 0, max: 200000 });
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          *,
+          property_images(image_url, is_primary)
+        `)
+        .eq('status', 'available')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedProperties: Property[] = data.map(property => ({
+        id: property.id,
+        title: property.title,
+        location: property.location,
+        price: property.price,
+        period: property.period,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        area: property.area,
+        description: property.description || '',
+        features: property.features || [],
+        coordinates: property.coordinates,
+        image: property.property_images?.find((img: any) => img.is_primary)?.image_url || 
+               property.property_images?.[0]?.image_url ||
+               "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
+      }));
+
+      setProperties(formattedProperties);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate distance between two coordinates (in km)
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -198,7 +103,7 @@ const Index = () => {
   };
 
   const handlePaymentSuccess = () => {
-    if (selectedProperty) {
+    if (selectedProperty && selectedProperty.coordinates) {
       const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${selectedProperty.coordinates.lat},${selectedProperty.coordinates.lng}&travelmode=driving`;
       window.open(directionsUrl, '_blank');
       setIsPaymentModalOpen(false);
@@ -213,10 +118,9 @@ const Index = () => {
 
   const filteredProperties: Property[] = properties
     .filter(property => {
-      const price = parseInt(property.price.replace(/[^0-9]/g, ''));
       const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            property.location.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPrice = price >= priceFilter.min && price <= priceFilter.max;
+      const matchesPrice = property.price >= priceFilter.min && property.price <= priceFilter.max;
       
       // Property type filter
       const matchesPropertyType = propertyTypeFilter === "all" || 
@@ -226,13 +130,10 @@ const Index = () => {
       let matchesLocation = true;
       if (userLocation) {
         if (userLocation.address === "Current Location") {
-          // Show all properties sorted by distance for current location
           matchesLocation = true;
         } else if (userLocation.address === "Nairobi County") {
-          // Show all properties in Nairobi (no location filtering)
           matchesLocation = true;
         } else {
-          // Filter by specific location
           const searchLocation = userLocation.address.toLowerCase();
           const propertyLocation = property.location.toLowerCase();
           
@@ -245,7 +146,7 @@ const Index = () => {
     })
     .map(property => {
       // Add distance if user location is available and not searching county-wide
-      if (userLocation && userLocation.address !== "Nairobi County") {
+      if (userLocation && userLocation.address !== "Nairobi County" && property.coordinates) {
         const distance = calculateDistance(
           userLocation.lat,
           userLocation.lng,
@@ -264,6 +165,14 @@ const Index = () => {
       return 0;
     });
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       <Header />
@@ -278,6 +187,39 @@ const Index = () => {
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
             Discover amazing empty rental houses across Nairobi. Find your way around the city seamless.
           </p>
+          
+          {/* Auth/Dashboard Buttons */}
+          <div className="flex items-center justify-center space-x-4 mb-8">
+            {!user ? (
+              <>
+                <Link to="/auth">
+                  <Button className="bg-white text-blue-600 hover:bg-gray-100 flex items-center space-x-2">
+                    <UserCheck size={20} />
+                    <span>Sign In as Tenant</span>
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 flex items-center space-x-2">
+                    <Building size={20} />
+                    <span>Sign In as Landlord</span>
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <span className="text-lg">Welcome, {profile?.full_name || profile?.email}!</span>
+                {profile?.role === 'landlord' && (
+                  <Link to="/dashboard">
+                    <Button className="bg-white text-blue-600 hover:bg-gray-100 flex items-center space-x-2">
+                      <Plus size={20} />
+                      <span>Add Property</span>
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+          
           <div className="flex items-center justify-center space-x-6 text-lg">
             <div className="flex items-center">
               <MapIcon className="mr-2" size={24} />
@@ -321,7 +263,12 @@ const Index = () => {
           {filteredProperties.map((property, index) => (
             <div key={property.id} className="relative">
               <PropertyCard
-                property={property}
+                property={{
+                  ...property,
+                  price: `KSh ${property.price.toLocaleString()}`,
+                  image: property.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
+                  coordinates: property.coordinates || { lat: -1.2921, lng: 36.8219 }
+                }}
                 onGetDirections={handleGetDirections}
                 index={index}
               />
@@ -347,7 +294,12 @@ const Index = () => {
       </section>
 
       {/* Properties by Area Section */}
-      <PropertiesByArea properties={properties} onGetDirections={handleGetDirections} />
+      <PropertiesByArea properties={filteredProperties.map(p => ({
+        ...p,
+        price: `KSh ${p.price.toLocaleString()}`,
+        image: p.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
+        coordinates: p.coordinates || { lat: -1.2921, lng: 36.8219 }
+      }))} onGetDirections={handleGetDirections} />
 
       {/* About Section */}
       <AboutSection />
