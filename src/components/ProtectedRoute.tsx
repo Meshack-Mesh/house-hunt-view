@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'landlord' | 'tenant';
+  requiredRole?: string; // Changed from enum to string
 }
 
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {

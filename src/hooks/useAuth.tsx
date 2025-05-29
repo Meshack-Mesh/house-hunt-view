@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,7 @@ interface Profile {
   email: string;
   full_name: string | null;
   phone: string | null;
-  role: 'landlord' | 'tenant';
+  role: string; // Changed from enum to string
   created_at: string;
   updated_at: string;
 }
@@ -22,7 +23,7 @@ interface AuthContextType {
     email: string,
     password: string,
     fullName: string,
-    role: 'landlord' | 'tenant'
+    role: string // Changed from enum to string
   ) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -97,25 +98,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: string,
     password: string,
     fullName: string,
-    role: 'landlord' | 'tenant'
+    role: string // Changed from enum to string
   ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName,
+          role: role
+        }
+      }
     });
 
-    if (error || !data.user) {
+    if (error) {
       return { error };
     }
 
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      email,
-      full_name: fullName,
-      role,
-    });
+    // If signup is successful but email confirmation is required
+    if (data.user && !data.session) {
+      return { error: null };
+    }
 
-    return { error: profileError };
+    return { error: null };
   };
 
   const signOut = async () => {

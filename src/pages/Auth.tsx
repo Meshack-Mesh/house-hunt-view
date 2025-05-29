@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, UserCheck, Building } from 'lucide-react';
+import { Home, UserCheck, Building, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -13,12 +13,18 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState<'landlord' | 'tenant'>('tenant');
+  const [role, setRole] = useState('tenant');
   const [loading, setLoading] = useState(false);
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const roleOptions = [
+    { value: 'tenant', label: 'Tenant', icon: UserCheck, description: 'Looking for a place to rent' },
+    { value: 'landlord', label: 'Landlord', icon: Building, description: 'Have properties to rent out' },
+    { value: 'agent', label: 'Real Estate Agent', icon: Users, description: 'Help clients find properties' }
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,36 +72,44 @@ const Auth = () => {
             <span className="text-2xl font-bold text-gray-800">House Hunt</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isLogin ? 'Welcome Back' : 'Join House Hunt'}
           </h1>
           <p className="text-gray-600">
-            {isLogin ? 'Sign in to your account' : 'Join House Hunt today'}
+            {isLogin ? 'Sign in to your account' : 'Create your account today'}
           </p>
         </div>
 
         {/* Role Selection for Signup */}
         {!isLogin && (
           <div className="mb-6">
-            <p className="text-sm font-medium text-gray-700 mb-3">I am a:</p>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant={role === 'tenant' ? 'default' : 'outline'}
-                onClick={() => setRole('tenant')}
-                className="flex items-center space-x-2 h-12"
-              >
-                <UserCheck size={20} />
-                <span>Tenant</span>
-              </Button>
-              <Button
-                type="button"
-                variant={role === 'landlord' ? 'default' : 'outline'}
-                onClick={() => setRole('landlord')}
-                className="flex items-center space-x-2 h-12"
-              >
-                <Building size={20} />
-                <span>Landlord</span>
-              </Button>
+            <p className="text-sm font-medium text-gray-700 mb-3">What describes you best?</p>
+            <div className="space-y-3">
+              {roleOptions.map((option) => {
+                const IconComponent = option.icon;
+                return (
+                  <div
+                    key={option.value}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      role === option.value
+                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setRole(option.value)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <IconComponent size={24} className={role === option.value ? 'text-blue-600' : 'text-gray-500'} />
+                      <div className="flex-1">
+                        <h3 className={`font-medium ${role === option.value ? 'text-blue-900' : 'text-gray-900'}`}>
+                          {option.label}
+                        </h3>
+                        <p className={`text-sm ${role === option.value ? 'text-blue-700' : 'text-gray-500'}`}>
+                          {option.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -104,7 +118,7 @@ const Auth = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-center">
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {isLogin ? 'Sign In' : 'Create Account'}
             </CardTitle>
           </CardHeader>
           <CardContent>
