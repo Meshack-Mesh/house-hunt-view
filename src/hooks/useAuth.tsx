@@ -8,7 +8,7 @@ interface Profile {
   email: string;
   full_name: string | null;
   phone: string | null;
-  role: string; // Changed from enum to string
+  role: string;
   created_at: string;
   updated_at: string;
 }
@@ -23,7 +23,7 @@ interface AuthContextType {
     email: string,
     password: string,
     fullName: string,
-    role: string // Changed from enum to string
+    role: string
   ) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -45,27 +45,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    if (data && !error) {
-      setProfile(data);
-    } else {
-      console.error('Error fetching profile:', error);
+      if (data && !error) {
+        setProfile(data);
+      } else {
+        console.error('Error fetching profile:', error);
+        setProfile(null);
+      }
+    } catch (error) {
+      console.error('Error in fetchProfile:', error);
+      setProfile(null);
     }
   };
 
   useEffect(() => {
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          await fetchProfile(session.user.id);
+          // Use setTimeout to avoid potential deadlocks
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
         }
@@ -74,6 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -87,40 +99,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error };
+    } catch (error) {
+      console.error('Sign in error:', error);
+      return { error };
+    }
   };
 
   const signUp = async (
     email: string,
     password: string,
     fullName: string,
-    role: string // Changed from enum to string
+    role: string
   ) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          role: role
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role
+          }
         }
-      }
-    });
+      });
 
-    if (error) {
+      if (error) {
+        console.error('Sign up error:', error);
+        return { error };
+      }
+
+      console.log('Sign up successful:', data);
+      return { error: null };
+    } catch (error) {
+      console.error('Sign up error:', error);
       return { error };
     }
-
-    // If signup is successful but email confirmation is required
-    if (data.user && !data.session) {
-      return { error: null };
-    }
-
-    return { error: null };
   };
 
   const signOut = async () => {

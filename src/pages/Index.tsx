@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,7 +41,11 @@ const Index = () => {
         .eq('status', 'available')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching properties:', error);
+        setProperties([]);
+        return;
+      }
 
       const formattedProperties: Property[] = data.map(property => ({
         id: property.id,
@@ -62,6 +67,7 @@ const Index = () => {
       setProperties(formattedProperties);
     } catch (error) {
       console.error('Error fetching properties:', error);
+      setProperties([]);
     } finally {
       setLoading(false);
     }
@@ -244,7 +250,7 @@ const Index = () => {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Available Empty Houses</h2>
           <p className="text-gray-600 text-lg">
-            {properties.length} empty rental houses found
+            {filteredProperties.length} empty rental houses found
             {userLocation && userLocation.address !== "Current Location" && userLocation.address !== "Nairobi County" && ` in ${userLocation.address}`}
             {userLocation && userLocation.address === "Current Location" && " (sorted by distance from your location)"}
             {userLocation && userLocation.address === "Nairobi County" && " in Nairobi County"}
@@ -252,7 +258,7 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {properties.map((property, index) => (
+          {filteredProperties.map((property, index) => (
             <div key={property.id} className="relative">
               <PropertyCard
                 property={convertToDisplayProperty(property)}
@@ -268,7 +274,7 @@ const Index = () => {
           ))}
         </div>
 
-        {properties.length === 0 && (
+        {filteredProperties.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-xl">
               {userLocation && userLocation.address !== "Current Location" && userLocation.address !== "Nairobi County"
@@ -282,7 +288,7 @@ const Index = () => {
 
       {/* Properties by Area Section */}
       <PropertiesByArea 
-        properties={properties.map(convertToDisplayProperty)} 
+        properties={filteredProperties.map(convertToDisplayProperty)} 
         onGetDirections={handleGetDirections} 
       />
 
