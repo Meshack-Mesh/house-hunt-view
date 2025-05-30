@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { X, CreditCard, Smartphone, Lock, CheckCircle, Building } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PropertySubscriptionModalProps {
   isOpen: boolean;
@@ -13,36 +14,84 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handlePayment = async () => {
+    if (paymentMethod === "mpesa" && !phoneNumber) {
+      setError("Please enter your M-Pesa phone number");
+      return;
+    }
+
     setIsProcessing(true);
+    setError(null);
     
-    // Simulate payment processing
-    setTimeout(() => {
+    try {
+      if (paymentMethod === "mpesa") {
+        // Call Daraja API for M-Pesa payment
+        const { data, error } = await supabase.functions.invoke('daraja-payment', {
+          body: {
+            phone: phoneNumber,
+            amount: 500,
+            account_reference: "PROPERTY_LISTING",
+            transaction_desc: "Property listing subscription fee"
+          }
+        });
+
+        if (error) {
+          console.error('Daraja payment error:', error);
+          setError("Payment failed. Please try again.");
+          setIsProcessing(false);
+          return;
+        }
+
+        if (data?.success) {
+          console.log('STK Push sent successfully:', data);
+          // Simulate waiting for payment confirmation
+          setTimeout(() => {
+            setIsProcessing(false);
+            setIsSuccess(true);
+            
+            setTimeout(() => {
+              onPaymentSuccess();
+              handleClose();
+            }, 2000);
+          }, 10000); // Wait 10 seconds for payment confirmation
+        } else {
+          setError(data?.error || "Payment failed. Please try again.");
+          setIsProcessing(false);
+        }
+      } else {
+        // Simulate card payment processing
+        setTimeout(() => {
+          setIsProcessing(false);
+          setIsSuccess(true);
+          
+          setTimeout(() => {
+            onPaymentSuccess();
+            handleClose();
+          }, 2000);
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError("Payment failed. Please try again.");
       setIsProcessing(false);
-      setIsSuccess(true);
-      
-      // After showing success, trigger the callback
-      setTimeout(() => {
-        onPaymentSuccess();
-        handleClose();
-      }, 2000);
-    }, 3000);
+    }
   };
 
   const handleClose = () => {
     setIsProcessing(false);
     setIsSuccess(false);
     setPhoneNumber("");
+    setError(null);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl max-w-md w-full p-6 relative animate-scale-in">
-        {/* Close Button */}
         <button
           onClick={handleClose}
           disabled={isProcessing}
@@ -53,7 +102,6 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
 
         {!isSuccess ? (
           <>
-            {/* Header */}
             <div className="text-center mb-6">
               <div className="bg-blue-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Building className="text-blue-600" size={24} />
@@ -66,7 +114,6 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
               </p>
             </div>
 
-            {/* Payment Amount */}
             <div className="bg-blue-50 rounded-lg p-4 mb-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-1">
                 KSh 500
@@ -76,7 +123,6 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
               </div>
             </div>
 
-            {/* Payment Methods */}
             <div className="mb-6">
               <h3 className="font-semibold text-gray-800 mb-3">Select Payment Method</h3>
               
@@ -113,7 +159,6 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
               </div>
             </div>
 
-            {/* Phone Number Input (for M-Pesa) */}
             {paymentMethod === "mpesa" && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -129,7 +174,12 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
               </div>
             )}
 
-            {/* Payment Button */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
             <button
               onClick={handlePayment}
               disabled={isProcessing || (paymentMethod === "mpesa" && !phoneNumber)}
@@ -138,21 +188,19 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
               {isProcessing ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Processing Payment...
+                  {paymentMethod === "mpesa" ? "Waiting for M-Pesa confirmation..." : "Processing Payment..."}
                 </>
               ) : (
                 `Pay KSh 500 via ${paymentMethod === "mpesa" ? "M-Pesa" : "Card"}`
               )}
             </button>
 
-            {/* Security Notice */}
             <div className="mt-4 text-center text-xs text-gray-500">
               <Lock size={12} className="inline mr-1" />
               Your payment is secure and encrypted
             </div>
           </>
         ) : (
-          /* Success State */
           <div className="text-center">
             <div className="bg-green-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
               <CheckCircle className="text-green-600" size={24} />

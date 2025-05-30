@@ -1,10 +1,9 @@
 
-// Shared Property interface to ensure consistency across the app
 export interface Property {
-  id: string; // UUID from database
+  id: string;
   title: string;
   location: string;
-  price: number; // Raw price from database
+  price: number;
   period: string;
   bedrooms: number;
   bathrooms: number;
@@ -12,17 +11,16 @@ export interface Property {
   description: string;
   features: string[];
   coordinates: { lat: number; lng: number } | null;
+  image: string;
   distance?: number;
-  image?: string;
-  status?: string; // Add status for landlord dashboard
+  landlordPhone?: string;
 }
 
-// Property interface for display components (with formatted price)
 export interface DisplayProperty {
   id: string;
   title: string;
   location: string;
-  price: string; // Formatted price for display
+  price: string;
   period: string;
   bedrooms: number;
   bathrooms: number;
@@ -30,6 +28,7 @@ export interface DisplayProperty {
   description: string;
   features: string[];
   coordinates: { lat: number; lng: number };
-  distance?: number;
   image: string;
+  distance?: number;
+  landlordPhone?: string;
 }
