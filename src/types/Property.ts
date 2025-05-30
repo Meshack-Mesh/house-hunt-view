@@ -14,6 +14,7 @@ export interface Property {
   image: string;
   distance?: number;
   landlordPhone?: string;
+  status?: string;
 }
 
 export interface DisplayProperty {
@@ -31,4 +32,5 @@ export interface DisplayProperty {
   image: string;
   distance?: number;
   landlordPhone?: string;
+  status?: string;
 }

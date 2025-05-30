@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Edit, Trash2, Home, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Property } from '@/types/Property';
+import { PropertySubscriptionModal } from '@/components/PropertySubscriptionModal';
 
 const LandlordDashboard = () => {
   const { user, profile } = useAuth();
@@ -17,6 +19,7 @@ const LandlordDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -65,7 +68,8 @@ const LandlordDashboard = () => {
         location: property.location,
         coordinates: property.coordinates as { lat: number; lng: number } | null,
         features: property.features || [],
-        status: property.status || 'available'
+        status: property.status || 'available',
+        image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
       }));
       
       setProperties(transformedProperties);
@@ -78,6 +82,15 @@ const LandlordDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddProperty = () => {
+    setShowSubscriptionModal(true);
+  };
+
+  const handleSubscriptionSuccess = () => {
+    setShowSubscriptionModal(false);
+    setShowAddForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -257,7 +270,7 @@ const LandlordDashboard = () => {
 
         {/* Add Property Button */}
         <div className="mb-6">
-          <Button onClick={() => setShowAddForm(true)} className="flex items-center space-x-2">
+          <Button onClick={handleAddProperty} className="flex items-center space-x-2">
             <Plus size={16} />
             <span>Add New Property</span>
           </Button>
@@ -454,6 +467,12 @@ const LandlordDashboard = () => {
             <p className="text-gray-400">Click "Add New Property" to get started.</p>
           </div>
         )}
+
+        <PropertySubscriptionModal
+          isOpen={showSubscriptionModal}
+          onClose={() => setShowSubscriptionModal(false)}
+          onPaymentSuccess={handleSubscriptionSuccess}
+        />
       </div>
     </div>
   );
