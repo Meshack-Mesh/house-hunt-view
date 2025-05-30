@@ -1,5 +1,7 @@
+
 import { MapIcon, Phone, Star, Bed, Bath, Square } from "lucide-react";
 import { DisplayProperty } from "@/types/Property";
+import { PropertyImageCarousel } from "./PropertyImageCarousel";
 
 interface PropertyCardProps {
   property: DisplayProperty;
@@ -8,18 +10,17 @@ interface PropertyCardProps {
 }
 
 export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardProps) => {
+  // Create array of images (up to 3)
+  const images = property.image ? [property.image] : [];
+  
   return (
     <div 
       className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Property Image */}
+      {/* Property Image Carousel */}
       <div className="relative overflow-hidden">
-        <img
-          src={property.image}
-          alt={property.title}
-          className="w-full h-64 object-cover transition-transform duration-300 hover:scale-110"
-        />
+        <PropertyImageCarousel images={images} title={property.title} />
         <div className="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
           Available
         </div>

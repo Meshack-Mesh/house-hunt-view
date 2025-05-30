@@ -1,30 +1,20 @@
 
 import { useState } from "react";
-import { X, CreditCard, Smartphone, Lock, CheckCircle, Phone } from "lucide-react";
+import { X, CreditCard, Smartphone, Lock, CheckCircle, Building } from "lucide-react";
 
-interface Property {
-  id: number;
-  title: string;
-  location: string;
-  coordinates: { lat: number; lng: number };
-  landlordPhone?: string;
-}
-
-interface PaymentModalProps {
+interface PropertySubscriptionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  property: Property | null;
   onPaymentSuccess: () => void;
 }
 
-export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: PaymentModalProps) => {
+export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }: PropertySubscriptionModalProps) => {
   const [paymentMethod, setPaymentMethod] = useState("mpesa");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [showLandlordContact, setShowLandlordContact] = useState(false);
 
-  if (!isOpen || !property) return null;
+  if (!isOpen) return null;
 
   const handlePayment = async () => {
     setIsProcessing(true);
@@ -33,20 +23,18 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
     setTimeout(() => {
       setIsProcessing(false);
       setIsSuccess(true);
-      setShowLandlordContact(true);
       
       // After showing success, trigger the callback
       setTimeout(() => {
         onPaymentSuccess();
         handleClose();
-      }, 5000); // Give more time to show contact info
+      }, 2000);
     }, 3000);
   };
 
   const handleClose = () => {
     setIsProcessing(false);
     setIsSuccess(false);
-    setShowLandlordContact(false);
     setPhoneNumber("");
     onClose();
   };
@@ -68,26 +56,23 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
             {/* Header */}
             <div className="text-center mb-6">
               <div className="bg-blue-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Lock className="text-blue-600" size={24} />
+                <Building className="text-blue-600" size={24} />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Unlock Directions
+                Property Listing Subscription
               </h2>
               <p className="text-gray-600">
-                Pay KSh 20 to get exact location and directions to
-              </p>
-              <p className="font-semibold text-gray-800 mt-1">
-                {property.title}
+                Pay KSh 500 per property to list your rental on our platform
               </p>
             </div>
 
             {/* Payment Amount */}
             <div className="bg-blue-50 rounded-lg p-4 mb-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-1">
-                KSh 20
+                KSh 500
               </div>
               <div className="text-sm text-gray-600">
-                One-time payment for directions
+                Per property listing fee
               </div>
             </div>
 
@@ -156,7 +141,7 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
                   Processing Payment...
                 </>
               ) : (
-                `Pay KSh 20 via ${paymentMethod === "mpesa" ? "M-Pesa" : "Card"}`
+                `Pay KSh 500 via ${paymentMethod === "mpesa" ? "M-Pesa" : "Card"}`
               )}
             </button>
 
@@ -176,23 +161,8 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
               Payment Successful!
             </h2>
             <p className="text-gray-600 mb-4">
-              Opening directions to {property.title}...
+              You can now add your property listing
             </p>
-            
-            {/* Show Landlord Contact Info */}
-            {showLandlordContact && property.landlordPhone && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                <h3 className="font-semibold text-green-800 mb-2">Landlord Contact</h3>
-                <div className="flex items-center justify-center text-green-700">
-                  <Phone size={16} className="mr-2" />
-                  <span className="font-medium">{property.landlordPhone}</span>
-                </div>
-                <p className="text-xs text-green-600 mt-1">
-                  You can now contact the landlord directly
-                </p>
-              </div>
-            )}
-            
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           </div>
         )}
