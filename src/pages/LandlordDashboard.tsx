@@ -1,4 +1,4 @@
-
+// Import necessary modules and components
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +37,9 @@ const LandlordDashboard = () => {
     status: 'available'
   });
 
+  // Image upload state
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+
   useEffect(() => {
     if (user) {
       fetchProperties();
@@ -54,7 +57,7 @@ const LandlordDashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       // Transform the data to match our Property interface
       const transformedProperties: Property[] = (data || []).map(property => ({
         id: property.id,
@@ -71,7 +74,7 @@ const LandlordDashboard = () => {
         status: property.status || 'available',
         image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
       }));
-      
+
       setProperties(transformedProperties);
     } catch (error) {
       toast({
@@ -91,6 +94,70 @@ const LandlordDashboard = () => {
   const handleSubscriptionSuccess = () => {
     setShowSubscriptionModal(false);
     setShowAddForm(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const validImages: File[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (
+        (file.type === 'image/png' || file.type === 'image/jpeg') &&
+        file.size <= 10 * 1024 * 1024
+      ) {
+        validImages.push(file);
+      } else {
+        toast({
+          title: "Invalid File",
+          description: `${file.name} is not a valid PNG/JPEG image or exceeds 10MB.`,
+          variant: "destructive",
+        });
+      }
+    }
+
+    if (validImages.length > 0) {
+      setSelectedImages(validImages);
+    }
+  };
+
+  const uploadImages = async (propertyId: string) => {
+    const uploadedImageUrls: string[] = [];
+
+    for (const image of selectedImages) {
+      const fileExt = image.name.split('.').pop();
+      const filePath = `properties/${propertyId}/${Date.now()}_${image.name}`;
+
+      const { data, error } = await supabase.storage
+        .from('property-images')
+        .upload(filePath, image);
+
+      if (error) {
+        toast({
+          title: "Upload Error",
+          description: `Failed to upload ${image.name}`,
+          variant: "destructive",
+        });
+        continue;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('property-images')
+        .getPublicUrl(filePath);
+
+      if (publicUrlData.publicUrl) {
+        uploadedImageUrls.push(publicUrlData.publicUrl);
+
+        // Insert into property_images table
+        await supabase.from('property_images').insert({
+          property_id: propertyId,
+          image_url: publicUrlData.publicUrl,
+        });
+      }
+    }
+
+    return uploadedImageUrls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,6 +183,8 @@ const LandlordDashboard = () => {
         landlord_id: user.id
       };
 
+      let propertyId = editingProperty?.id;
+
       if (editingProperty) {
         const { error } = await supabase
           .from('properties')
@@ -129,16 +198,25 @@ const LandlordDashboard = () => {
           description: "Property updated successfully",
         });
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('properties')
-          .insert(propertyData);
+          .insert(propertyData)
+          .select()
+          .single();
 
         if (error) throw error;
+
+        propertyId = data.id;
 
         toast({
           title: "Success",
           description: "Property added successfully",
         });
+      }
+
+      // Upload images if any
+      if (selectedImages.length > 0 && propertyId) {
+        await uploadImages(propertyId);
       }
 
       // Reset form and refresh data
@@ -213,6 +291,7 @@ const LandlordDashboard = () => {
       features: '',
       status: 'available'
     });
+    setSelectedImages([]);
     setShowAddForm(false);
     setEditingProperty(null);
   };
@@ -238,242 +317,176 @@ const LandlordDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-              <Home className="h-4 w-4 text-muted-foreground" />
+                <Home className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{properties.length}</div>
+              <p className="text-xs text-muted-foreground">All listed properties</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {properties.filter(p => p.status === 'available').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-              <Home className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                KSh {properties.reduce((sum, p) => sum + p.price, 0).toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Add Property Button */}
-        <div className="mb-6">
-          <Button onClick={handleAddProperty} className="flex items-center space-x-2">
-            <Plus size={16} />
-            <span>Add New Property</span>
-          </Button>
+          {/* You can add more stat cards here if needed */}
         </div>
 
         {/* Add/Edit Property Form */}
         {showAddForm && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>{editingProperty ? 'Edit Property' : 'Add New Property'}</CardTitle>
-              <CardDescription>
-                {editingProperty ? 'Update your property details' : 'Fill in the details for your new property'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="title">Property Title</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="price">Price (KSh)</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="bedrooms">Bedrooms</Label>
-                    <Input
-                      id="bedrooms"
-                      type="number"
-                      value={formData.bedrooms}
-                      onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="bathrooms">Bathrooms</Label>
-                    <Input
-                      id="bathrooms"
-                      type="number"
-                      value={formData.bathrooms}
-                      onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="area">Area (sq ft)</Label>
-                    <Input
-                      id="area"
-                      value={formData.area}
-                      onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">
+              {editingProperty ? 'Edit Property' : 'Add New Property'}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded shadow-md">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="location">Location</Label>
+                  <Label>Title</Label>
                   <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="e.g., Westlands, Nairobi"
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
                   />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="latitude">Latitude (optional)</Label>
-                    <Input
-                      id="latitude"
-                      type="number"
-                      step="any"
-                      value={formData.latitude}
-                      onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                      placeholder="-1.2921"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="longitude">Longitude (optional)</Label>
-                    <Input
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      value={formData.longitude}
-                      onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                      placeholder="36.8219"
-                    />
-                  </div>
-                </div>
-
                 <div>
-                  <Label htmlFor="features">Features (comma-separated)</Label>
+                  <Label>Price</Label>
                   <Input
-                    id="features"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Period</Label>
+                  <Input
+                    type="text"
+                    value={formData.period}
+                    onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Bedrooms</Label>
+                  <Input
+                    type="number"
+                    value={formData.bedrooms}
+                    onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Bathrooms</Label>
+                  <Input
+                    type="number"
+                    value={formData.bathrooms}
+                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Area (sq ft)</Label>
+                  <Input
+                    type="text"
+                    value={formData.area}
+                    onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Location</Label>
+                  <Input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Latitude</Label>
+                  <Input
+                    type="text"
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Longitude</Label>
+                  <Input
+                    type="text"
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Features (comma separated)</Label>
+                  <Input
+                    type="text"
                     value={formData.features}
                     onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                    placeholder="Parking, Security, Garden, Modern Kitchen"
                   />
                 </div>
-
                 <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={4}
+                  <Label>Status</Label>
+                  <Input
+                    type="text"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   />
                 </div>
+              </div>
 
-                <div className="flex space-x-2">
-                  <Button type="submit">
-                    {editingProperty ? 'Update Property' : 'Add Property'}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+              {/* Image Upload */}
+              <div>
+                <Label>Upload Property Images (at least 3, PNG/JPEG, max 10MB each)</Label>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/png, image/jpeg"
+                  onChange={handleImageChange}
+                />
+                {selectedImages.length > 0 && (
+                  <p className="text-sm text-gray-500 mt-2">{selectedImages.length} image(s) selected</p>
+                )}
+              </div>
+
+              <div className="flex space-x-4">
+                <Button type="submit">{editingProperty ? 'Update Property' : 'Add Property'}</Button>
+                <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
+              </div>
+            </form>
+          </div>
         )}
 
-        {/* Properties List */}
+        {/* Add Button */}
+        {!showAddForm && (
+          <div className="mb-6">
+            <Button onClick={handleAddProperty}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Property
+            </Button>
+          </div>
+        )}
+
+        {/* Property Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties.map((property) => (
+          {properties.map(property => (
             <Card key={property.id}>
-              <CardHeader>
-                <CardTitle className="text-lg">{property.title}</CardTitle>
-                <CardDescription>{property.location}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p className="text-2xl font-bold text-blue-600">
-                    KSh {property.price.toLocaleString()} 
-                    <span className="text-sm font-normal text-gray-500 ml-1">
-                      {property.period}
-                    </span>
-                  </p>
-                  <div className="flex space-x-4 text-sm text-gray-600">
-                    <span>{property.bedrooms} bed</span>
-                    <span>{property.bathrooms} bath</span>
-                    <span>{property.area}</span>
-                  </div>
-                  {property.features.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {property.features.slice(0, 3).map((feature, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs"
-                        >
-                          {feature}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex space-x-2 mt-4">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(property)}>
-                      <Edit size={14} />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="destructive" 
-                      onClick={() => handleDelete(property.id)}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
+              <img src={property.image} alt={property.title} className="w-full h-48 object-cover rounded-t" />
+              <CardContent className="p-4">
+                <CardTitle className="text-xl">{property.title}</CardTitle>
+                <CardDescription className="text-gray-600 mb-2">{property.location}</CardDescription>
+                <p className="text-gray-800 font-semibold">{property.price} {property.period}</p>
+                <div className="mt-4 flex space-x-2">
+                  <Button size="sm" onClick={() => handleEdit(property)}><Edit className="w-4 h-4 mr-1" /> Edit</Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(property.id)}><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        {properties.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-500 text-xl">No properties added yet.</p>
-            <p className="text-gray-400">Click "Add New Property" to get started.</p>
-          </div>
-        )}
-
-        <PropertySubscriptionModal
-          isOpen={showSubscriptionModal}
-          onClose={() => setShowSubscriptionModal(false)}
-          onPaymentSuccess={handleSubscriptionSuccess}
-        />
       </div>
+
+      {/* Subscription Modal */}
+      {showSubscriptionModal && (
+        <PropertySubscriptionModal
+          onSuccess={handleSubscriptionSuccess}
+          onCancel={() => setShowSubscriptionModal(false)}
+        />
+      )}
     </div>
   );
 };
