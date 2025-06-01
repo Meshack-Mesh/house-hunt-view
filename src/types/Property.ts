@@ -15,6 +15,9 @@ export interface Property {
   distance?: number;
   landlordPhone?: string;
   status?: string;
+  collection_id?: string;
+  remaining_units?: number;
+  total_units?: number;
 }
 
 export interface DisplayProperty {
@@ -33,4 +36,16 @@ export interface DisplayProperty {
   distance?: number;
   landlordPhone?: string;
   status?: string;
+  collection_id?: string;
+  remaining_units?: number;
+  total_units?: number;
+}
+
+export interface PropertyCollection {
+  id: string;
+  name: string;
+  description: string;
+  landlord_id: string;
+  created_at: string;
+  updated_at: string;
 }

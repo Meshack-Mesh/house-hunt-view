@@ -46,6 +46,11 @@ export const PropertyListings = ({
                 {property.distance} km away
               </div>
             )}
+            {property.remaining_units && property.total_units && (
+              <div className="absolute top-4 left-4 bg-orange-600 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
+                {property.remaining_units} units remaining
+              </div>
+            )}
           </div>
         ))}
       </div>

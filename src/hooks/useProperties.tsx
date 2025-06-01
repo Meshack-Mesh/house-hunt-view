@@ -40,6 +40,9 @@ export const useProperties = () => {
         description: property.description || '',
         features: property.features || [],
         coordinates: property.coordinates as { lat: number; lng: number } | null,
+        collection_id: property.collection_id,
+        remaining_units: property.remaining_units,
+        total_units: property.total_units,
         image: property.property_images?.find((img: any) => img.is_primary)?.image_url || 
                property.property_images?.[0]?.image_url ||
                "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
