@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,7 +36,9 @@ const LandlordDashboard = () => {
     location: '',
     coordinates: null as { lat: number; lng: number } | null,
     features: '',
-    status: 'available'
+    status: 'available',
+    remaining_units: '1',
+    total_units: '1'
   });
 
   useEffect(() => {
@@ -115,7 +116,9 @@ const LandlordDashboard = () => {
         coordinates: formData.coordinates,
         features: formData.features ? formData.features.split(',').map(f => f.trim()) : [],
         status: formData.status,
-        landlord_id: user.id
+        landlord_id: user.id,
+        remaining_units: parseInt(formData.remaining_units),
+        total_units: parseInt(formData.total_units)
       };
 
       let propertyId: string;
@@ -195,7 +198,9 @@ const LandlordDashboard = () => {
       location: property.location,
       coordinates: property.coordinates,
       features: property.features.join(', '),
-      status: property.status || 'available'
+      status: property.status || 'available',
+      remaining_units: (property.remaining_units || 1).toString(),
+      total_units: (property.total_units || 1).toString()
     });
     setShowAddForm(true);
   };
@@ -238,7 +243,9 @@ const LandlordDashboard = () => {
       location: '',
       coordinates: null,
       features: '',
-      status: 'available'
+      status: 'available',
+      remaining_units: '1',
+      total_units: '1'
     });
     setPropertyImages([]);
     setShowAddForm(false);
@@ -368,14 +375,38 @@ const LandlordDashboard = () => {
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="area">Area (sq ft)</Label>
-                  <Input
-                    id="area"
-                    value={formData.area}
-                    onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="area">Area (sq ft)</Label>
+                    <Input
+                      id="area"
+                      value={formData.area}
+                      onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="remaining_units">Remaining Units</Label>
+                    <Input
+                      id="remaining_units"
+                      type="number"
+                      min="1"
+                      value={formData.remaining_units}
+                      onChange={(e) => setFormData({ ...formData, remaining_units: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="total_units">Total Units</Label>
+                    <Input
+                      id="total_units"
+                      type="number"
+                      min="1"
+                      value={formData.total_units}
+                      onChange={(e) => setFormData({ ...formData, total_units: e.target.value })}
+                      required
+                    />
+                  </div>
                 </div>
 
                 <LocationInput
@@ -442,16 +473,9 @@ const LandlordDashboard = () => {
                     <span>{property.bathrooms} bath</span>
                     <span>{property.area}</span>
                   </div>
-                  {property.features.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {property.features.slice(0, 3).map((feature, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs"
-                        >
-                          {feature}
-                        </span>
-                      ))}
+                  {(property.remaining_units || property.total_units) && (
+                    <div className="bg-green-50 text-green-700 px-2 py-1 rounded-md text-sm">
+                      Units: {property.remaining_units || 1} remaining of {property.total_units || 1}
                     </div>
                   )}
                   <div className="flex space-x-2 mt-4">

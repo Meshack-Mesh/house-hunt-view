@@ -1,5 +1,5 @@
 
-import { MapIcon, Phone, Star, Bed, Bath, Square } from "lucide-react";
+import { MapIcon, Phone, Star, Bed, Bath, Square, Home } from "lucide-react";
 import { DisplayProperty } from "@/types/Property";
 import { PropertyImageCarousel } from "./PropertyImageCarousel";
 
@@ -10,8 +10,8 @@ interface PropertyCardProps {
 }
 
 export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardProps) => {
-  // Create array of images (up to 3)
-  const images = property.image ? [property.image] : [];
+  // Create array of images (up to 3) - for now using the same image multiple times as placeholder
+  const images = property.image ? [property.image, property.image, property.image] : [];
   
   return (
     <div 
@@ -27,6 +27,13 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
         <div className="absolute top-4 right-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-full p-2">
           <Star className="text-yellow-500" size={16} />
         </div>
+        {/* Remaining Units Badge */}
+        {property.remaining_units && property.remaining_units > 0 && (
+          <div className="absolute bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
+            <Home size={14} />
+            <span>{property.remaining_units} units left</span>
+          </div>
+        )}
       </div>
 
       {/* Property Details */}
