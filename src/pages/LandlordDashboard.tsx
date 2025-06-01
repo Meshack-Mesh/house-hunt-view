@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, Home, MapPin, Collection } from 'lucide-react';
+import { Plus, Edit, Trash2, Home, MapPin, FolderOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Property, PropertyCollection } from '@/types/Property';
+import { Property } from '@/types/Property';
 import { PropertySubscriptionModal } from '@/components/PropertySubscriptionModal';
 import { PropertyImageUpload } from '@/components/PropertyImageUpload';
 import { LocationInput } from '@/components/LocationInput';
@@ -18,10 +19,8 @@ const LandlordDashboard = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [properties, setProperties] = useState<Property[]>([]);
-  const [collections, setCollections] = useState<PropertyCollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [showCollectionForm, setShowCollectionForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
@@ -38,45 +37,14 @@ const LandlordDashboard = () => {
     location: '',
     coordinates: null as { lat: number; lng: number } | null,
     features: '',
-    status: 'available',
-    collection_id: '',
-    remaining_units: '1',
-    total_units: '1'
-  });
-
-  // Collection form state
-  const [collectionData, setCollectionData] = useState({
-    name: '',
-    description: ''
+    status: 'available'
   });
 
   useEffect(() => {
     if (user) {
-      fetchCollections();
       fetchProperties();
     }
   }, [user]);
-
-  const fetchCollections = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('property_collections')
-        .select('*')
-        .eq('landlord_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCollections(data || []);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch collections",
-        variant: "destructive",
-      });
-    }
-  };
 
   const fetchProperties = async () => {
     if (!user) return;
@@ -86,8 +54,7 @@ const LandlordDashboard = () => {
         .from('properties')
         .select(`
           *,
-          property_images(image_url, is_primary),
-          property_collections(name)
+          property_images(image_url, is_primary)
         `)
         .eq('landlord_id', user.id)
         .order('created_at', { ascending: false });
@@ -107,9 +74,6 @@ const LandlordDashboard = () => {
         coordinates: property.coordinates as { lat: number; lng: number } | null,
         features: property.features || [],
         status: property.status || 'available',
-        collection_id: property.collection_id,
-        remaining_units: property.remaining_units || 1,
-        total_units: property.total_units || 1,
         image: property.property_images?.[0]?.image_url || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
       }));
 
@@ -151,9 +115,6 @@ const LandlordDashboard = () => {
         coordinates: formData.coordinates,
         features: formData.features ? formData.features.split(',').map(f => f.trim()) : [],
         status: formData.status,
-        collection_id: formData.collection_id || null,
-        remaining_units: parseInt(formData.remaining_units),
-        total_units: parseInt(formData.total_units),
         landlord_id: user.id
       };
 
@@ -221,38 +182,6 @@ const LandlordDashboard = () => {
     }
   };
 
-  const handleCreateCollection = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('property_collections')
-        .insert({
-          name: collectionData.name,
-          description: collectionData.description,
-          landlord_id: user.id
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Collection created successfully",
-      });
-
-      setCollectionData({ name: '', description: '' });
-      setShowCollectionForm(false);
-      fetchCollections();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create collection",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleEdit = (property: Property) => {
     setEditingProperty(property);
     setFormData({
@@ -266,10 +195,7 @@ const LandlordDashboard = () => {
       location: property.location,
       coordinates: property.coordinates,
       features: property.features.join(', '),
-      status: property.status || 'available',
-      collection_id: property.collection_id || '',
-      remaining_units: property.remaining_units?.toString() || '1',
-      total_units: property.total_units?.toString() || '1'
+      status: property.status || 'available'
     });
     setShowAddForm(true);
   };
@@ -312,10 +238,7 @@ const LandlordDashboard = () => {
       location: '',
       coordinates: null,
       features: '',
-      status: 'available',
-      collection_id: '',
-      remaining_units: '1',
-      total_units: '1'
+      status: 'available'
     });
     setPropertyImages([]);
     setShowAddForm(false);
@@ -347,7 +270,7 @@ const LandlordDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
@@ -370,15 +293,6 @@ const LandlordDashboard = () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Collections</CardTitle>
-              <Collection className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{collections.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Value</CardTitle>
               <Home className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -396,52 +310,7 @@ const LandlordDashboard = () => {
             <Plus size={16} />
             <span>Add New Property</span>
           </Button>
-          <Button variant="outline" onClick={() => setShowCollectionForm(true)} className="flex items-center space-x-2">
-            <Collection size={16} />
-            <span>Create Collection</span>
-          </Button>
         </div>
-
-        {/* Create Collection Form */}
-        {showCollectionForm && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Create New Collection</CardTitle>
-              <CardDescription>
-                Create a collection to group your properties (e.g., "Kings Apartments")
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCreateCollection} className="space-y-4">
-                <div>
-                  <Label htmlFor="collection-name">Collection Name</Label>
-                  <Input
-                    id="collection-name"
-                    value={collectionData.name}
-                    onChange={(e) => setCollectionData({ ...collectionData, name: e.target.value })}
-                    placeholder="e.g., Kings Apartments"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="collection-description">Description (Optional)</Label>
-                  <Textarea
-                    id="collection-description"
-                    value={collectionData.description}
-                    onChange={(e) => setCollectionData({ ...collectionData, description: e.target.value })}
-                    placeholder="Brief description of this property collection"
-                  />
-                </div>
-                <div className="flex space-x-2">
-                  <Button type="submit">Create Collection</Button>
-                  <Button type="button" variant="outline" onClick={() => setShowCollectionForm(false)}>
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Add/Edit Property Form */}
         {showAddForm && (
@@ -476,7 +345,7 @@ const LandlordDashboard = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="bedrooms">Bedrooms</Label>
                     <Input
@@ -497,26 +366,6 @@ const LandlordDashboard = () => {
                       required
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="total-units">Total Units</Label>
-                    <Input
-                      id="total-units"
-                      type="number"
-                      value={formData.total_units}
-                      onChange={(e) => setFormData({ ...formData, total_units: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="remaining-units">Remaining Units</Label>
-                    <Input
-                      id="remaining-units"
-                      type="number"
-                      value={formData.remaining_units}
-                      onChange={(e) => setFormData({ ...formData, remaining_units: e.target.value })}
-                      required
-                    />
-                  </div>
                 </div>
 
                 <div>
@@ -533,26 +382,6 @@ const LandlordDashboard = () => {
                   value={formData.location}
                   onChange={handleLocationChange}
                 />
-
-                <div>
-                  <Label htmlFor="collection">Property Collection (Optional)</Label>
-                  <Select
-                    value={formData.collection_id}
-                    onValueChange={(value) => setFormData({ ...formData, collection_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a collection or leave empty" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No Collection</SelectItem>
-                      {collections.map((collection) => (
-                        <SelectItem key={collection.id} value={collection.id}>
-                          {collection.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <PropertyImageUpload
                   onImagesChange={setPropertyImages}
@@ -613,11 +442,6 @@ const LandlordDashboard = () => {
                     <span>{property.bathrooms} bath</span>
                     <span>{property.area}</span>
                   </div>
-                  {property.remaining_units && property.total_units && (
-                    <p className="text-sm text-orange-600 font-medium">
-                      {property.remaining_units} of {property.total_units} units remaining
-                    </p>
-                  )}
                   {property.features.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {property.features.slice(0, 3).map((feature, idx) => (
