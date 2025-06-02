@@ -15,8 +15,8 @@ interface LocationInputProps {
 export const LocationInput = ({ 
   value, 
   onChange, 
-  label = "Location", 
-  placeholder = "Enter location (e.g., Kawangware, Nairobi)" 
+  label = "Property Location", 
+  placeholder = "Enter address (e.g., Kawangware, Nairobi)" 
 }: LocationInputProps) => {
   const [loading, setLoading] = useState(false);
   const [showCoordinateInput, setShowCoordinateInput] = useState(false);
@@ -79,33 +79,43 @@ export const LocationInput = ({
   };
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor="location">{label}</Label>
-      <div className="flex space-x-2">
-        <Input
-          id="location"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="flex-1"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={getCurrentLocation}
-          disabled={loading}
-        >
-          <Navigation className="h-4 w-4" />
-          {loading ? "Getting..." : "Current"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setShowCoordinateInput(!showCoordinateInput)}
-        >
-          <Compass className="h-4 w-4" />
-          Coordinates
-        </Button>
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="location">{label}</Label>
+        <div className="flex space-x-2 mt-2">
+          <Input
+            id="location"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={getCurrentLocation}
+            disabled={loading}
+            className="shrink-0"
+          >
+            <Navigation className="h-4 w-4 mr-1" />
+            {loading ? "Getting..." : "Current"}
+          </Button>
+        </div>
+      </div>
+      
+      <div>
+        <Label className="text-sm text-gray-600">Or use precise coordinates (optional)</Label>
+        <div className="mt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowCoordinateInput(!showCoordinateInput)}
+            className="w-full"
+          >
+            <Compass className="h-4 w-4 mr-2" />
+            {showCoordinateInput ? 'Hide' : 'Use'} Latitude & Longitude
+          </Button>
+        </div>
       </div>
       
       {showCoordinateInput && (

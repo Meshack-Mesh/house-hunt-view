@@ -56,7 +56,8 @@ const LandlordDashboard = () => {
     features: '',
     status: 'available',
     remaining_units: '1',
-    property_type: 'Apartment / Flat'
+    property_type: 'Apartment / Flat',
+    landlord_phone: ''
   });
 
   useEffect(() => {
@@ -96,6 +97,7 @@ const LandlordDashboard = () => {
         remaining_units: property.remaining_units || 1,
         total_units: property.total_units || 1,
         property_type: property.property_type || 'Apartment / Flat',
+        landlordPhone: property.landlord_phone,
         image: property.property_images?.[0]?.image_url || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
       }));
 
@@ -139,8 +141,9 @@ const LandlordDashboard = () => {
         status: formData.status,
         landlord_id: user.id,
         remaining_units: parseInt(formData.remaining_units),
-        total_units: parseInt(formData.remaining_units), // Set total units same as remaining for new properties
-        property_type: formData.property_type
+        total_units: parseInt(formData.remaining_units),
+        property_type: formData.property_type,
+        landlord_phone: formData.landlord_phone
       };
 
       let propertyId: string;
@@ -222,7 +225,8 @@ const LandlordDashboard = () => {
       features: property.features.join(', '),
       status: property.status || 'available',
       remaining_units: (property.remaining_units || 1).toString(),
-      property_type: property.property_type || 'Apartment / Flat'
+      property_type: property.property_type || 'Apartment / Flat',
+      landlord_phone: property.landlordPhone || ''
     });
     setShowAddForm(true);
   };
@@ -267,7 +271,8 @@ const LandlordDashboard = () => {
       features: '',
       status: 'available',
       remaining_units: '1',
-      property_type: 'Apartment / Flat'
+      property_type: 'Apartment / Flat',
+      landlord_phone: ''
     });
     setPropertyImages([]);
     setShowAddForm(false);
@@ -438,6 +443,18 @@ const LandlordDashboard = () => {
                   </div>
                 </div>
 
+                <div>
+                  <Label htmlFor="landlord_phone">Contact Phone Number</Label>
+                  <Input
+                    id="landlord_phone"
+                    type="tel"
+                    value={formData.landlord_phone}
+                    onChange={(e) => setFormData({ ...formData, landlord_phone: e.target.value })}
+                    placeholder="254XXXXXXXXX"
+                    required
+                  />
+                </div>
+
                 <LocationInput
                   value={formData.location}
                   onChange={handleLocationChange}
@@ -508,6 +525,11 @@ const LandlordDashboard = () => {
                   <div className="bg-green-50 text-green-700 px-2 py-1 rounded-md text-sm">
                     {property.remaining_units || 1} units remaining
                   </div>
+                  {property.landlordPhone && (
+                    <div className="text-sm text-gray-600">
+                      Contact: {property.landlordPhone}
+                    </div>
+                  )}
                   <div className="flex space-x-2 mt-4">
                     <Button size="sm" variant="outline" onClick={() => handleEdit(property)}>
                       <Edit size={14} />

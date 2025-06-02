@@ -33,7 +33,7 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
         const { data, error } = await supabase.functions.invoke('daraja-payment', {
           body: {
             phone: phoneNumber,
-            amount: 500,
+            amount: 1,
             account_reference: "PROPERTY_LISTING",
             transaction_desc: "Property listing subscription fee"
           }
@@ -57,7 +57,7 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
               onPaymentSuccess();
               handleClose();
             }, 2000);
-          }, 10000); // Wait 10 seconds for payment confirmation
+          }, 10000);
         } else {
           setError(data?.error || "Payment failed. Please try again.");
           setIsProcessing(false);
@@ -110,13 +110,13 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
                 Property Listing Subscription
               </h2>
               <p className="text-gray-600">
-                Pay KSh 500 per property to list your rental on our platform
+                Pay KSh 1 per property to list your rental on our platform
               </p>
             </div>
 
             <div className="bg-blue-50 rounded-lg p-4 mb-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-1">
-                KSh 500
+                KSh 1
               </div>
               <div className="text-sm text-gray-600">
                 Per property listing fee
@@ -191,7 +191,7 @@ export const PropertySubscriptionModal = ({ isOpen, onClose, onPaymentSuccess }:
                   {paymentMethod === "mpesa" ? "Waiting for M-Pesa confirmation..." : "Processing Payment..."}
                 </>
               ) : (
-                `Pay KSh 500 via ${paymentMethod === "mpesa" ? "M-Pesa" : "Card"}`
+                `Pay KSh 1 via ${paymentMethod === "mpesa" ? "M-Pesa" : "Card"}`
               )}
             </button>
 

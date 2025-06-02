@@ -13,6 +13,12 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
   // Use the images array from the property or fall back to single image
   const images = property.images || (property.image ? [property.image] : []);
   
+  const handleCall = () => {
+    if (property.landlordPhone) {
+      window.open(`tel:${property.landlordPhone}`, '_self');
+    }
+  };
+  
   return (
     <div 
       className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100"
@@ -107,11 +113,16 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
             className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center space-x-2"
           >
             <MapIcon size={16} />
-            <span>Get Directions (KSh 20)</span>
+            <span>Get Directions (KSh 1)</span>
           </button>
-          <button className="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors">
-            <Phone size={16} />
-          </button>
+          {property.landlordPhone && (
+            <button 
+              onClick={handleCall}
+              className="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Phone size={16} />
+            </button>
+          )}
         </div>
       </div>
     </div>

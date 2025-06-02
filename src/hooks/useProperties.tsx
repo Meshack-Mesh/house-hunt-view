@@ -51,6 +51,7 @@ export const useProperties = () => {
           remaining_units: property.remaining_units || 1,
           total_units: property.total_units || 1,
           property_type: property.property_type || 'Apartment / Flat',
+          landlordPhone: property.landlord_phone,
           images: images,
           image: images[0] // Keep the main image for backward compatibility
         };
