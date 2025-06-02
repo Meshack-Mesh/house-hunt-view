@@ -279,12 +279,12 @@ const LandlordDashboard = () => {
     setEditingProperty(null);
   };
 
-  const handleLocationChange = (location: string, coordinates?: { lat: number; lng: number }) => {
-    setFormData({ 
-      ...formData, 
-      location,
-      coordinates: coordinates || null
-    });
+  const handleLocationChange = (location: string) => {
+    setFormData({ ...formData, location });
+  };
+
+  const handleCoordinatesChange = (coordinates: { lat: number; lng: number } | null) => {
+    setFormData({ ...formData, coordinates });
   };
 
   if (loading) {
@@ -456,8 +456,10 @@ const LandlordDashboard = () => {
                 </div>
 
                 <LocationInput
-                  value={formData.location}
-                  onChange={handleLocationChange}
+                  locationValue={formData.location}
+                  coordinatesValue={formData.coordinates}
+                  onLocationChange={handleLocationChange}
+                  onCoordinatesChange={handleCoordinatesChange}
                 />
 
                 <PropertyImageUpload

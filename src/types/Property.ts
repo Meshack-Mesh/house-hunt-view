@@ -2,7 +2,7 @@
 export interface Property {
   id: string;
   title: string;
-  location: string;
+  location: string; // This will be the text location like "Kawangware"
   price: number;
   period: string;
   bedrooms: number;
@@ -10,7 +10,7 @@ export interface Property {
   area: string;
   description: string;
   features: string[];
-  coordinates: { lat: number; lng: number } | null;
+  coordinates: { lat: number; lng: number } | null; // Separate coordinates for directions
   image: string;
   images?: string[];
   distance?: number;
@@ -25,7 +25,7 @@ export interface Property {
 export interface DisplayProperty {
   id: string;
   title: string;
-  location: string;
+  location: string; // Text location like "Kawangware"
   price: string;
   period: string;
   bedrooms: number;
@@ -33,7 +33,7 @@ export interface DisplayProperty {
   area: string;
   description: string;
   features: string[];
-  coordinates: { lat: number; lng: number };
+  coordinates: { lat: number; lng: number }; // Coordinates for directions
   image: string;
   images?: string[];
   distance?: number;

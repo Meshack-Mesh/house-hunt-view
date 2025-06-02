@@ -18,6 +18,14 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
       window.open(`tel:${property.landlordPhone}`, '_self');
     }
   };
+
+  const handleGetDirections = () => {
+    if (property.coordinates) {
+      onGetDirections(property);
+    } else {
+      alert('Exact coordinates not available for this property.');
+    }
+  };
   
   return (
     <div 
@@ -109,7 +117,7 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
         {/* Action Buttons */}
         <div className="flex space-x-2">
           <button
-            onClick={() => onGetDirections(property)}
+            onClick={handleGetDirections}
             className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center space-x-2"
           >
             <MapIcon size={16} />

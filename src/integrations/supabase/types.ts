@@ -146,6 +146,7 @@ export type Database = {
           features: string[] | null
           id: string
           landlord_id: string
+          landlord_phone: string | null
           location: string
           period: string
           price: number
@@ -166,6 +167,7 @@ export type Database = {
           features?: string[] | null
           id?: string
           landlord_id: string
+          landlord_phone?: string | null
           location: string
           period?: string
           price: number
@@ -186,6 +188,7 @@ export type Database = {
           features?: string[] | null
           id?: string
           landlord_id?: string
+          landlord_phone?: string | null
           location?: string
           period?: string
           price?: number

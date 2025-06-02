@@ -1,178 +1,138 @@
 
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MapPin, Compass, Navigation } from 'lucide-react';
+import { MapPin, Navigation } from 'lucide-react';
 
 interface LocationInputProps {
-  value: string;
-  onChange: (location: string, coordinates?: { lat: number; lng: number }) => void;
-  label?: string;
-  placeholder?: string;
+  locationValue: string;
+  coordinatesValue: { lat: number; lng: number } | null;
+  onLocationChange: (location: string) => void;
+  onCoordinatesChange: (coordinates: { lat: number; lng: number } | null) => void;
 }
 
 export const LocationInput = ({ 
-  value, 
-  onChange, 
-  label = "Property Location", 
-  placeholder = "Enter address (e.g., Kawangware, Nairobi)" 
+  locationValue, 
+  coordinatesValue, 
+  onLocationChange, 
+  onCoordinatesChange 
 }: LocationInputProps) => {
-  const [loading, setLoading] = useState(false);
-  const [showCoordinateInput, setShowCoordinateInput] = useState(false);
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  const getCurrentLocation = () => {
-    setLoading(true);
-    
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          try {
-            // Use reverse geocoding to get address from coordinates
-            const response = await fetch(
-              `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=demo&limit=1`
-            );
-            const data = await response.json();
-            
-            if (data.results && data.results.length > 0) {
-              const address = data.results[0].formatted;
-              onChange(address, { lat: latitude, lng: longitude });
-            } else {
-              onChange(`${latitude}, ${longitude}`, { lat: latitude, lng: longitude });
-            }
-          } catch (error) {
-            // Fallback to coordinates if geocoding fails
-            onChange(`${latitude}, ${longitude}`, { lat: latitude, lng: longitude });
-          }
-          
-          setLoading(false);
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          setLoading(false);
-        }
-      );
-    } else {
-      setLoading(false);
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser.');
+      return;
     }
-  };
 
-  const handleCoordinateSubmit = () => {
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-    
-    if (!isNaN(lat) && !isNaN(lng)) {
-      // Format coordinates with compass directions
-      const latDirection = lat >= 0 ? 'N' : 'S';
-      const lngDirection = lng >= 0 ? 'E' : 'W';
-      const formattedLocation = `${Math.abs(lat).toFixed(5)}°${latDirection} ${Math.abs(lng).toFixed(5)}°${lngDirection}`;
-      
-      onChange(formattedLocation, { lat, lng });
-      setShowCoordinateInput(false);
-      setLatitude('');
-      setLongitude('');
-    }
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        onCoordinatesChange({ lat: latitude, lng: longitude });
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        alert('Unable to get your location. Please enter coordinates manually.');
+        setIsGettingLocation(false);
+      }
+    );
   };
 
   return (
     <div className="space-y-4">
+      {/* Location Text Input */}
       <div>
-        <Label htmlFor="location">{label}</Label>
-        <div className="flex space-x-2 mt-2">
+        <Label htmlFor="location">Property Location</Label>
+        <div className="flex items-center space-x-2">
+          <MapPin className="text-gray-400" size={20} />
           <Input
             id="location"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="flex-1"
+            value={locationValue}
+            onChange={(e) => onLocationChange(e.target.value)}
+            placeholder="e.g., Kawangware, Nairobi"
+            required
           />
+        </div>
+        <p className="text-sm text-gray-500 mt-1">
+          Enter the area or neighborhood name (e.g., Kawangware, Westlands, etc.)
+        </p>
+      </div>
+
+      {/* Coordinates Section */}
+      <div className="border rounded-lg p-4 bg-gray-50">
+        <div className="flex items-center justify-between mb-3">
+          <Label className="text-sm font-medium">Exact Coordinates (Optional)</Label>
           <Button
             type="button"
+            onClick={handleGetCurrentLocation}
+            disabled={isGettingLocation}
+            size="sm"
             variant="outline"
-            onClick={getCurrentLocation}
-            disabled={loading}
-            className="shrink-0"
+            className="flex items-center space-x-1"
           >
-            <Navigation className="h-4 w-4 mr-1" />
-            {loading ? "Getting..." : "Current"}
+            <Navigation size={14} />
+            <span>{isGettingLocation ? 'Getting...' : 'Use Current Location'}</span>
           </Button>
         </div>
-      </div>
-      
-      <div>
-        <Label className="text-sm text-gray-600">Or use precise coordinates (optional)</Label>
-        <div className="mt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowCoordinateInput(!showCoordinateInput)}
-            className="w-full"
-          >
-            <Compass className="h-4 w-4 mr-2" />
-            {showCoordinateInput ? 'Hide' : 'Use'} Latitude & Longitude
-          </Button>
-        </div>
-      </div>
-      
-      {showCoordinateInput && (
-        <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-          <div className="text-sm font-medium text-gray-700">Enter precise coordinates:</div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="latitude" className="text-xs">Latitude</Label>
-              <Input
-                id="latitude"
-                type="number"
-                step="any"
-                value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
-                placeholder="e.g., -1.2921"
-                className="text-sm"
-              />
-              <div className="text-xs text-gray-500 mt-1">North (+) / South (-)</div>
-            </div>
-            <div>
-              <Label htmlFor="longitude" className="text-xs">Longitude</Label>
-              <Input
-                id="longitude"
-                type="number"
-                step="any"
-                value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
-                placeholder="e.g., 36.8219"
-                className="text-sm"
-              />
-              <div className="text-xs text-gray-500 mt-1">East (+) / West (-)</div>
-            </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="latitude" className="text-sm">Latitude</Label>
+            <Input
+              id="latitude"
+              type="number"
+              step="any"
+              value={coordinatesValue?.lat || ''}
+              onChange={(e) => {
+                const lat = parseFloat(e.target.value);
+                if (!isNaN(lat)) {
+                  onCoordinatesChange({
+                    lat,
+                    lng: coordinatesValue?.lng || 0
+                  });
+                } else if (e.target.value === '') {
+                  onCoordinatesChange(null);
+                }
+              }}
+              placeholder="-1.2921"
+            />
           </div>
-          <div className="flex space-x-2">
-            <Button
-              type="button"
-              size="sm"
-              onClick={handleCoordinateSubmit}
-              disabled={!latitude || !longitude}
-            >
-              <MapPin className="h-3 w-3 mr-1" />
-              Set Location
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setShowCoordinateInput(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-          <div className="text-xs text-gray-500">
-            Example: -1.2921°S 36.8219°E (Nairobi CBD)
+          <div>
+            <Label htmlFor="longitude" className="text-sm">Longitude</Label>
+            <Input
+              id="longitude"
+              type="number"
+              step="any"
+              value={coordinatesValue?.lng || ''}
+              onChange={(e) => {
+                const lng = parseFloat(e.target.value);
+                if (!isNaN(lng)) {
+                  onCoordinatesChange({
+                    lat: coordinatesValue?.lat || 0,
+                    lng
+                  });
+                } else if (e.target.value === '') {
+                  onCoordinatesChange(null);
+                }
+              }}
+              placeholder="36.8219"
+            />
           </div>
         </div>
-      )}
+        
+        <p className="text-xs text-gray-500 mt-2">
+          Coordinates help tenants get exact directions to your property. Leave empty if not available.
+        </p>
+        
+        {coordinatesValue && (
+          <div className="mt-2 text-sm text-green-600">
+            ✓ Coordinates set: {coordinatesValue.lat.toFixed(6)}, {coordinatesValue.lng.toFixed(6)}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -39,7 +39,7 @@ export const useProperties = () => {
         return {
           id: property.id,
           title: property.title,
-          location: property.location,
+          location: property.location, // This is the text location like "Kawangware"
           price: property.price,
           period: property.period,
           bedrooms: property.bedrooms,
@@ -47,7 +47,7 @@ export const useProperties = () => {
           area: property.area,
           description: property.description || '',
           features: property.features || [],
-          coordinates: property.coordinates as { lat: number; lng: number } | null,
+          coordinates: property.coordinates as { lat: number; lng: number } | null, // Separate coordinates for directions
           remaining_units: property.remaining_units || 1,
           total_units: property.total_units || 1,
           property_type: property.property_type || 'Apartment / Flat',
