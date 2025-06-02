@@ -12,12 +12,14 @@ export interface Property {
   features: string[];
   coordinates: { lat: number; lng: number } | null;
   image: string;
+  images?: string[];
   distance?: number;
   landlordPhone?: string;
   status?: string;
   collection_id?: string;
   remaining_units?: number;
   total_units?: number;
+  property_type?: string;
 }
 
 export interface DisplayProperty {
@@ -33,12 +35,14 @@ export interface DisplayProperty {
   features: string[];
   coordinates: { lat: number; lng: number };
   image: string;
+  images?: string[];
   distance?: number;
   landlordPhone?: string;
   status?: string;
   collection_id?: string;
   remaining_units?: number;
   total_units?: number;
+  property_type?: string;
 }
 
 export interface PropertyCollection {

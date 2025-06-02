@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, UserCheck, Building, Users } from 'lucide-react';
+import { Home, UserCheck, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -22,8 +22,7 @@ const Auth = () => {
 
   const roleOptions = [
     { value: 'tenant', label: 'Tenant', icon: UserCheck, description: 'Looking for a place to rent' },
-    { value: 'landlord', label: 'Landlord', icon: Building, description: 'Have properties to rent out' },
-    { value: 'agent', label: 'Real Estate Agent', icon: Users, description: 'Help clients find properties' }
+    { value: 'landlord', label: 'Landlord', icon: Building, description: 'Have properties to rent out' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {

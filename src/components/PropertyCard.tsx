@@ -10,8 +10,8 @@ interface PropertyCardProps {
 }
 
 export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardProps) => {
-  // Create array of images (up to 3) - for now using the same image multiple times as placeholder
-  const images = property.image ? [property.image, property.image, property.image] : [];
+  // Use the images array from the property or fall back to single image
+  const images = property.images || (property.image ? [property.image] : []);
   
   return (
     <div 
@@ -31,7 +31,7 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
         {property.remaining_units && property.remaining_units > 0 && (
           <div className="absolute bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center space-x-1">
             <Home size={14} />
-            <span>{property.remaining_units} units left</span>
+            <span>{property.remaining_units} units remaining</span>
           </div>
         )}
       </div>
@@ -42,10 +42,17 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
           {property.title}
         </h3>
         
-        <p className="text-gray-600 mb-4 flex items-center">
+        <p className="text-gray-600 mb-2 flex items-center">
           <MapIcon size={16} className="mr-1 text-blue-600" />
           {property.location}
         </p>
+
+        {/* Property Type */}
+        {property.property_type && (
+          <p className="text-sm text-blue-600 mb-4 font-medium">
+            {property.property_type}
+          </p>
+        )}
 
         <div className="flex items-center justify-between mb-4">
           <div className="text-3xl font-bold text-blue-600">

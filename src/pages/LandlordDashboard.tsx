@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,12 +8,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, Home, MapPin, FolderOpen } from 'lucide-react';
+import { Plus, Edit, Trash2, Home, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Property } from '@/types/Property';
 import { PropertySubscriptionModal } from '@/components/PropertySubscriptionModal';
 import { PropertyImageUpload } from '@/components/PropertyImageUpload';
 import { LocationInput } from '@/components/LocationInput';
+
+const propertyTypes = [
+  'Apartment / Flat',
+  'Detached House',
+  'Semi-Detached House',
+  'Terraced House',
+  'Bungalow',
+  'Studio Apartment',
+  'Duplex',
+  'Townhouse',
+  'Villa',
+  'Condominium',
+  'Retail Space / Shop',
+  'Warehouse',
+  'Industrial Building',
+  'Shopping Mall Unit'
+];
 
 const LandlordDashboard = () => {
   const { user, profile } = useAuth();
@@ -38,7 +56,7 @@ const LandlordDashboard = () => {
     features: '',
     status: 'available',
     remaining_units: '1',
-    total_units: '1'
+    property_type: 'Apartment / Flat'
   });
 
   useEffect(() => {
@@ -75,6 +93,9 @@ const LandlordDashboard = () => {
         coordinates: property.coordinates as { lat: number; lng: number } | null,
         features: property.features || [],
         status: property.status || 'available',
+        remaining_units: property.remaining_units || 1,
+        total_units: property.total_units || 1,
+        property_type: property.property_type || 'Apartment / Flat',
         image: property.property_images?.[0]?.image_url || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop"
       }));
 
@@ -118,7 +139,8 @@ const LandlordDashboard = () => {
         status: formData.status,
         landlord_id: user.id,
         remaining_units: parseInt(formData.remaining_units),
-        total_units: parseInt(formData.total_units)
+        total_units: parseInt(formData.remaining_units), // Set total units same as remaining for new properties
+        property_type: formData.property_type
       };
 
       let propertyId: string;
@@ -200,7 +222,7 @@ const LandlordDashboard = () => {
       features: property.features.join(', '),
       status: property.status || 'available',
       remaining_units: (property.remaining_units || 1).toString(),
-      total_units: (property.total_units || 1).toString()
+      property_type: property.property_type || 'Apartment / Flat'
     });
     setShowAddForm(true);
   };
@@ -245,7 +267,7 @@ const LandlordDashboard = () => {
       features: '',
       status: 'available',
       remaining_units: '1',
-      total_units: '1'
+      property_type: 'Apartment / Flat'
     });
     setPropertyImages([]);
     setShowAddForm(false);
@@ -289,12 +311,12 @@ const LandlordDashboard = () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available</CardTitle>
+              <CardTitle className="text-sm font-medium">Available Units</CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {properties.filter(p => p.status === 'available').length}
+                {properties.reduce((sum, p) => sum + (p.remaining_units || 0), 0)}
               </div>
             </CardContent>
           </Card>
@@ -341,6 +363,27 @@ const LandlordDashboard = () => {
                     />
                   </div>
                   <div>
+                    <Label htmlFor="property_type">Property Type</Label>
+                    <Select
+                      value={formData.property_type}
+                      onValueChange={(value) => setFormData({ ...formData, property_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select property type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {propertyTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
                     <Label htmlFor="price">Price (KSh)</Label>
                     <Input
                       id="price"
@@ -350,9 +393,20 @@ const LandlordDashboard = () => {
                       required
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="remaining_units">Remaining Units</Label>
+                    <Input
+                      id="remaining_units"
+                      type="number"
+                      min="1"
+                      value={formData.remaining_units}
+                      onChange={(e) => setFormData({ ...formData, remaining_units: e.target.value })}
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="bedrooms">Bedrooms</Label>
                     <Input
@@ -373,37 +427,12 @@ const LandlordDashboard = () => {
                       required
                     />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="area">Area (sq ft)</Label>
                     <Input
                       id="area"
                       value={formData.area}
                       onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="remaining_units">Remaining Units</Label>
-                    <Input
-                      id="remaining_units"
-                      type="number"
-                      min="1"
-                      value={formData.remaining_units}
-                      onChange={(e) => setFormData({ ...formData, remaining_units: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="total_units">Total Units</Label>
-                    <Input
-                      id="total_units"
-                      type="number"
-                      min="1"
-                      value={formData.total_units}
-                      onChange={(e) => setFormData({ ...formData, total_units: e.target.value })}
                       required
                     />
                   </div>
@@ -462,6 +491,9 @@ const LandlordDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
+                  <p className="text-sm text-blue-600 font-medium">
+                    {property.property_type}
+                  </p>
                   <p className="text-2xl font-bold text-blue-600">
                     KSh {property.price.toLocaleString()}
                     <span className="text-sm font-normal text-gray-500 ml-1">
@@ -473,11 +505,9 @@ const LandlordDashboard = () => {
                     <span>{property.bathrooms} bath</span>
                     <span>{property.area}</span>
                   </div>
-                  {(property.remaining_units || property.total_units) && (
-                    <div className="bg-green-50 text-green-700 px-2 py-1 rounded-md text-sm">
-                      Units: {property.remaining_units || 1} remaining of {property.total_units || 1}
-                    </div>
-                  )}
+                  <div className="bg-green-50 text-green-700 px-2 py-1 rounded-md text-sm">
+                    {property.remaining_units || 1} units remaining
+                  </div>
                   <div className="flex space-x-2 mt-4">
                     <Button size="sm" variant="outline" onClick={() => handleEdit(property)}>
                       <Edit size={14} />

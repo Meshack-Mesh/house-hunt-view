@@ -18,7 +18,8 @@ export const PropertyListings = ({
     ...property,
     price: `KSh ${property.price.toLocaleString()}`,
     image: property.image || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=600&fit=crop",
-    coordinates: property.coordinates || { lat: -1.2921, lng: 36.8219 }
+    coordinates: property.coordinates || { lat: -1.2921, lng: 36.8219 },
+    images: property.images
   });
 
   return (
@@ -44,11 +45,6 @@ export const PropertyListings = ({
             {property.distance !== undefined && (
               <div className="absolute top-4 right-4 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
                 {property.distance} km away
-              </div>
-            )}
-            {property.remaining_units && property.total_units && (
-              <div className="absolute top-4 left-4 bg-orange-600 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
-                {property.remaining_units} units remaining
               </div>
             )}
           </div>

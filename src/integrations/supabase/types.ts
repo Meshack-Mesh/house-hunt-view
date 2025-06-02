@@ -149,8 +149,11 @@ export type Database = {
           location: string
           period: string
           price: number
+          property_type: string | null
+          remaining_units: number | null
           status: string | null
           title: string
+          total_units: number | null
           updated_at: string | null
         }
         Insert: {
@@ -166,8 +169,11 @@ export type Database = {
           location: string
           period?: string
           price: number
+          property_type?: string | null
+          remaining_units?: number | null
           status?: string | null
           title: string
+          total_units?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -183,8 +189,11 @@ export type Database = {
           location?: string
           period?: string
           price?: number
+          property_type?: string | null
+          remaining_units?: number | null
           status?: string | null
           title?: string
+          total_units?: number | null
           updated_at?: string | null
         }
         Relationships: [

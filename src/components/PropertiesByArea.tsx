@@ -35,18 +35,12 @@ export const PropertiesByArea = ({ properties, onGetDirections }: PropertiesByAr
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {areaProperties.map((property, index) => (
-                <div key={property.id} className="relative">
-                  <PropertyCard
-                    property={property}
-                    onGetDirections={onGetDirections}
-                    index={index}
-                  />
-                  {property.remaining_units && property.total_units && (
-                    <div className="absolute top-4 left-4 bg-orange-600 text-white px-2 py-1 rounded-full text-xs font-semibold z-10">
-                      {property.remaining_units} units remaining
-                    </div>
-                  )}
-                </div>
+                <PropertyCard
+                  key={property.id}
+                  property={property}
+                  onGetDirections={onGetDirections}
+                  index={index}
+                />
               ))}
             </div>
           </div>

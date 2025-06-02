@@ -16,7 +16,7 @@ export const LocationInput = ({
   value, 
   onChange, 
   label = "Location", 
-  placeholder = "Enter property location (e.g., Westlands, Nairobi)" 
+  placeholder = "Enter location (e.g., Kawangware, Nairobi)" 
 }: LocationInputProps) => {
   const [loading, setLoading] = useState(false);
   const [showCoordinateInput, setShowCoordinateInput] = useState(false);
