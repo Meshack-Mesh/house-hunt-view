@@ -7,13 +7,19 @@ interface PropertyCardProps {
   property: DisplayProperty;
   onGetDirections: (property: DisplayProperty) => void;
   index: number;
+  hasAccessToContact?: boolean;
 }
 
-export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardProps) => {
+export const PropertyCard = ({ property, onGetDirections, index, hasAccessToContact = false }: PropertyCardProps) => {
   // Use the images array from the property or fall back to single image
   const images = property.images || (property.image ? [property.image] : []);
   
   const handleCall = () => {
+    if (!hasAccessToContact) {
+      alert('Please pay for directions first to get landlord contact information.');
+      return;
+    }
+    
     if (property.landlordPhone) {
       window.open(`tel:${property.landlordPhone}`, '_self');
     }
@@ -126,7 +132,13 @@ export const PropertyCard = ({ property, onGetDirections, index }: PropertyCardP
           {property.landlordPhone && (
             <button 
               onClick={handleCall}
-              className="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+              disabled={!hasAccessToContact}
+              className={`py-3 px-4 rounded-lg transition-colors ${
+                hasAccessToContact 
+                  ? 'bg-green-600 text-white hover:bg-green-700' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              title={hasAccessToContact ? 'Call landlord' : 'Pay for directions first to call landlord'}
             >
               <Phone size={16} />
             </button>

@@ -23,6 +23,7 @@ const Index = () => {
   const [priceFilter, setPriceFilter] = useState({ min: 0, max: 200000 });
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
+  const [paidProperties, setPaidProperties] = useState<Set<string>>(new Set());
 
   // Calculate distance between two coordinates (in km)
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -43,7 +44,9 @@ const Index = () => {
     setIsPaymentModalOpen(true);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (propertyId: string) => {
+    setPaidProperties(prev => new Set([...prev, propertyId]));
+    
     if (selectedProperty && selectedProperty.coordinates) {
       const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${selectedProperty.coordinates.lat},${selectedProperty.coordinates.lng}&travelmode=driving`;
       window.open(directionsUrl, '_blank');
@@ -146,11 +149,13 @@ const Index = () => {
         filteredProperties={filteredProperties}
         userLocation={userLocation}
         onGetDirections={handleGetDirections}
+        paidProperties={paidProperties}
       />
 
       <PropertiesByArea 
         properties={filteredProperties.map(convertToDisplayProperty)} 
-        onGetDirections={handleGetDirections} 
+        onGetDirections={handleGetDirections}
+        paidProperties={paidProperties}
       />
 
       <AboutSection />

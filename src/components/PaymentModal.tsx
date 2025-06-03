@@ -15,7 +15,7 @@ interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   property: Property | null;
-  onPaymentSuccess: () => void;
+  onPaymentSuccess: (propertyId: string) => void;
 }
 
 export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: PaymentModalProps) => {
@@ -43,7 +43,7 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
         const { data, error } = await supabase.functions.invoke('daraja-payment', {
           body: {
             phone: phoneNumber,
-            amount: 20,
+            amount: 1,
             account_reference: `DIRECTIONS_${property.id}`,
             transaction_desc: `Directions to ${property.title}`
           }
@@ -65,7 +65,7 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
             setShowLandlordContact(true);
             
             setTimeout(() => {
-              onPaymentSuccess();
+              onPaymentSuccess(property.id);
               handleClose();
             }, 5000);
           }, 10000); // Wait 10 seconds for payment confirmation
@@ -81,7 +81,7 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
           setShowLandlordContact(true);
           
           setTimeout(() => {
-            onPaymentSuccess();
+            onPaymentSuccess(property.id);
             handleClose();
           }, 5000);
         }, 3000);
@@ -102,6 +102,12 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
     onClose();
   };
 
+  const handleCallLandlord = () => {
+    if (property.landlordPhone) {
+      window.open(`tel:${property.landlordPhone}`, '_self');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl max-w-md w-full p-6 relative animate-scale-in">
@@ -120,10 +126,10 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
                 <Lock className="text-blue-600" size={24} />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Unlock Directions
+                Unlock Directions & Contact
               </h2>
               <p className="text-gray-600">
-                Pay KSh 20 to get exact location and directions to
+                Pay KSh 1 to get exact location, directions, and landlord contact for
               </p>
               <p className="font-semibold text-gray-800 mt-1">
                 {property.title}
@@ -132,10 +138,10 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
 
             <div className="bg-blue-50 rounded-lg p-4 mb-6 text-center">
               <div className="text-3xl font-bold text-blue-600 mb-1">
-                KSh 20
+                KSh 1
               </div>
               <div className="text-sm text-gray-600">
-                One-time payment for directions
+                One-time payment for directions & contact
               </div>
             </div>
 
@@ -207,7 +213,7 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
                   {paymentMethod === "mpesa" ? "Waiting for M-Pesa confirmation..." : "Processing Payment..."}
                 </>
               ) : (
-                `Pay KSh 20 via ${paymentMethod === "mpesa" ? "M-Pesa" : "Card"}`
+                `Pay KSh 1 via ${paymentMethod === "mpesa" ? "M-Pesa" : "Card"}`
               )}
             </button>
 
@@ -231,11 +237,17 @@ export const PaymentModal = ({ isOpen, onClose, property, onPaymentSuccess }: Pa
             {showLandlordContact && property.landlordPhone && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <h3 className="font-semibold text-green-800 mb-2">Landlord Contact</h3>
-                <div className="flex items-center justify-center text-green-700">
+                <div className="flex items-center justify-center text-green-700 mb-2">
                   <Phone size={16} className="mr-2" />
                   <span className="font-medium">{property.landlordPhone}</span>
                 </div>
-                <p className="text-xs text-green-600 mt-1">
+                <button
+                  onClick={handleCallLandlord}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  Call Landlord Now
+                </button>
+                <p className="text-xs text-green-600 mt-2">
                   You can now contact the landlord directly
                 </p>
               </div>
