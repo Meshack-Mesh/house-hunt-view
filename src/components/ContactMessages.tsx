@@ -48,7 +48,14 @@ export const ContactMessages = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMessages(data || []);
+      
+      // Type assertion to ensure proper typing
+      const typedMessages = (data || []).map(msg => ({
+        ...msg,
+        status: msg.status as 'unread' | 'read' | 'replied'
+      }));
+      
+      setMessages(typedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
