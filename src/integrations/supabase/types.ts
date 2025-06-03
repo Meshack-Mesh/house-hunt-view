@@ -51,6 +51,39 @@ export type Database = {
           },
         ]
       }
+      contact_messages: {
+        Row: {
+          admin_reply: string | null
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_reply?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_reply?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number | null

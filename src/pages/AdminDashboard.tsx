@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Home, Users, TrendingUp } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DollarSign, Home, Users, TrendingUp, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { ContactMessages } from '@/components/ContactMessages';
 
 interface AdminStats {
   totalProperties: number;
@@ -13,6 +15,7 @@ interface AdminStats {
   totalAmount: number;
   totalLandlords: number;
   totalTenants: number;
+  totalMessages: number;
   recentTransactions: any[];
   recentProperties: any[];
 }
@@ -27,6 +30,7 @@ const AdminDashboard = () => {
     totalAmount: 0,
     totalLandlords: 0,
     totalTenants: 0,
+    totalMessages: 0,
     recentTransactions: [],
     recentProperties: []
   });
@@ -57,6 +61,11 @@ const AdminDashboard = () => {
 
       if (paymentsError) throw paymentsError;
 
+      // Fetch contact messages count
+      const { count: messagesCount } = await supabase
+        .from('contact_messages')
+        .select('*', { count: 'exact', head: true });
+
       const totalAmount = payments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
 
       // Fetch profiles count by role
@@ -80,6 +89,7 @@ const AdminDashboard = () => {
         totalAmount,
         totalLandlords: landlords,
         totalTenants: tenants,
+        totalMessages: messagesCount || 0,
         recentTransactions: payments?.slice(0, 5) || [],
         recentProperties: recentProperties || []
       });
@@ -114,104 +124,127 @@ const AdminDashboard = () => {
           <p className="text-gray-600">Platform overview and statistics</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-              <Home className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalProperties}</div>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="messages">Contact Messages</TabsTrigger>
+          </TabsList>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalTransactions}</div>
-            </CardContent>
-          </Card>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
+                  <Home className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalProperties}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">KSh {stats.totalAmount.toLocaleString()}</div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalTransactions}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalLandlords + stats.totalTenants}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.totalLandlords} landlords, {stats.totalTenants} tenants
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">KSh {stats.totalAmount.toLocaleString()}</div>
+                </CardContent>
+              </Card>
 
-        {/* Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Properties</CardTitle>
-              <CardDescription>Latest property listings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stats.recentProperties.map((property, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">{property.title}</p>
-                      <p className="text-sm text-gray-500">{property.location}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">KSh {property.price.toLocaleString()}</p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(property.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalLandlords + stats.totalTenants}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats.totalLandlords} landlords, {stats.totalTenants} tenants
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Contact Messages</CardTitle>
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalMessages}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Properties</CardTitle>
+                  <CardDescription>Latest property listings</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {stats.recentProperties.map((property, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{property.title}</p>
+                          <p className="text-sm text-gray-500">{property.location}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">KSh {property.price.toLocaleString()}</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(property.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>Latest payment transactions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stats.recentTransactions.map((transaction, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">Payment</p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(transaction.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">KSh {transaction.amount.toLocaleString()}</p>
-                      <p className="text-sm text-green-600">{transaction.status}</p>
-                    </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Transactions</CardTitle>
+                  <CardDescription>Latest payment transactions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {stats.recentTransactions.map((transaction, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">Payment</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(transaction.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">KSh {transaction.amount.toLocaleString()}</p>
+                          <p className="text-sm text-green-600">{transaction.status}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <ContactMessages />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
