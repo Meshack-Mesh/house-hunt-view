@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Home, Phone, Mail, LogOut, Plus } from "lucide-react";
+import { Menu, X, Home, Phone, Mail, LogOut, Plus, Settings } from "lucide-react";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -76,6 +76,12 @@ export const Header = () => {
                     </Button>
                   </Link>
                 )}
+                <Link to="/admin">
+                  <Button size="sm" variant="outline" className="flex items-center space-x-1">
+                    <Settings size={16} />
+                    <span>Admin</span>
+                  </Button>
+                </Link>
                 <Button 
                   size="sm" 
                   variant="outline" 
@@ -153,6 +159,11 @@ export const Header = () => {
                       </Button>
                     </Link>
                   )}
+                  <Link to="/admin" className="block">
+                    <Button size="sm" variant="outline" className="w-full mb-2">
+                      Admin
+                    </Button>
+                  </Link>
                   <Button 
                     size="sm" 
                     variant="outline" 
