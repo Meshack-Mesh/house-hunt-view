@@ -10,6 +10,10 @@ export const Header = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
 
+  // Define the site owner email
+  const SITE_OWNER_EMAIL = "meshackmwima@gmail.com";
+  const isOwner = user?.email === SITE_OWNER_EMAIL;
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -76,12 +80,14 @@ export const Header = () => {
                     </Button>
                   </Link>
                 )}
-                <Link to="/admin">
-                  <Button size="sm" variant="outline" className="flex items-center space-x-1">
-                    <Settings size={16} />
-                    <span>Admin</span>
-                  </Button>
-                </Link>
+                {isOwner && (
+                  <Link to="/admin">
+                    <Button size="sm" variant="outline" className="flex items-center space-x-1">
+                      <Settings size={16} />
+                      <span>Admin</span>
+                    </Button>
+                  </Link>
+                )}
                 <Button 
                   size="sm" 
                   variant="outline" 
@@ -159,11 +165,13 @@ export const Header = () => {
                       </Button>
                     </Link>
                   )}
-                  <Link to="/admin" className="block">
-                    <Button size="sm" variant="outline" className="w-full mb-2">
-                      Admin
-                    </Button>
-                  </Link>
+                  {isOwner && (
+                    <Link to="/admin" className="block">
+                      <Button size="sm" variant="outline" className="w-full mb-2">
+                        Admin
+                      </Button>
+                    </Link>
+                  )}
                   <Button 
                     size="sm" 
                     variant="outline" 
